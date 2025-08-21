@@ -5,18 +5,34 @@
       "name": "Pâtes à l’ail et au citron",
       "description": "Rapide, frais, parfait pour un dîner en semaine.",
       "ingredients": [
-        { "name": "Spaghetti", "quantity": "200g" },
-        { "name": "Ail", "quantity": "2 gousses" },
-        { "name": "Citron", "quantity": "1" }
+        {
+          "name": "Spaghetti",
+          "quantity": "200g"
+        },
+        {
+          "name": "Ail",
+          "quantity": "2 gousses"
+        },
+        {
+          "name": "Citron",
+          "quantity": "1"
+        }
       ],
-      "occasions": ["dîner"],
-      "preferences": ["rapide", "budget"],
-      "favorite": true,
+      "occasions": [
+        "dîner"
+      ],
+      "preferences": [
+        "rapide",
+        "budget"
+      ],
+      "favorite": false,
       "createdAt": "2025-08-21T10:00:00Z"
     }
   ],
   "playlist": {
     "todayRecipeId": 1,
-    "plannedIds": [1]
+    "plannedIds": [
+      1
+    ]
   }
 }
