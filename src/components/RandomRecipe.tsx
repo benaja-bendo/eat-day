@@ -1,7 +1,7 @@
 import React from 'react';
 import { useRandomRecipeQuery } from '../features/recipes/hooks';
 import RecipeCard from './RecipeCard';
-import { playClick, playSuccess, playWhoosh, playSoundIfEnabled } from '../utils/sound';
+import { playSuccess, playWhoosh, playSoundIfEnabled } from '../utils/sound';
 import { createParticleEffect, scaleUpElement, glowElement } from '../utils/animations';
 import type { Recipe } from '../features/recipes/types';
 

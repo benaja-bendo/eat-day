@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import type { Recipe, Ingredient } from '../features/recipes/types';
 import { playClick, playSuccess, playError, playSoundIfEnabled } from '../utils/sound';
 import { shakeElement, bounceElement, pulseElement, wiggleElement, createConfettiEffect } from '../utils/animations';

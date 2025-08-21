@@ -9,11 +9,13 @@ export default {
           yellow: '#FFE066',
           orange: '#FF8C42',
           red: '#FF6B6B',
+          'red-light': '#FFA8A8',
           pink: '#FF8CC8',
-          purple: '#A8E6CF',
+          purple: '#B39CD0',
           blue: '#74C0FC',
           green: '#51CF66',
           mint: '#8CE99A',
+          gray: '#9CA3AF',
         },
         paper: {
           cream: '#FFF8E1',
@@ -23,8 +25,8 @@ export default {
       },
       // Polices hand-drawn
       fontFamily: {
-        'hand': ['Comic Sans MS', 'cursive'],
-        'cartoon': ['Fredoka One', 'Comic Sans MS', 'cursive'],
+        hand: ['Fredoka', 'Comic Sans MS', 'cursive'],
+        cartoon: ['Fredoka One', 'Fredoka', 'Comic Sans MS', 'cursive'],
       },
       // Ombres douces cartoon
       boxShadow: {
