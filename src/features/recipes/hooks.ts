@@ -8,8 +8,8 @@ import {
   toggleRecipeFavorite,
   fetchRandomRecipe,
   fetchMealCalendar,
+  fetchPlaylist,
 } from './api';
-import type { Recipe } from './types';
 
 /**
  * Hook pour récupérer toutes les recettes
@@ -49,10 +49,10 @@ export function useCreateRecipeMutation() {
  */
 export function useUpdateRecipeMutation() {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
-    mutationFn: ({ id, recipe }: { id: number; recipe: Partial<Recipe> }) =>
-      updateRecipe(id, recipe),
+    mutationFn: ({ id, formData }: { id: number; formData: FormData }) =>
+      updateRecipe(id, formData),
     onSuccess: (data) => {
       // Mettre à jour le cache
       queryClient.invalidateQueries({ queryKey: ['recipes'] });
@@ -109,5 +109,15 @@ export function useMealCalendarQuery() {
   return useQuery({
     queryKey: ['mealCalendar'],
     queryFn: fetchMealCalendar,
+  });
+}
+
+/**
+ * Hook pour récupérer la playlist quotidienne
+ */
+export function usePlaylistQuery() {
+  return useQuery({
+    queryKey: ['playlist'],
+    queryFn: fetchPlaylist,
   });
 }

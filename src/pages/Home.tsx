@@ -1,17 +1,12 @@
-import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import RecipeCard from '../components/RecipeCard';
-import RandomRecipe from '../components/RandomRecipe';
-import MealCalendar from '../components/MealCalendar';
 import { useRecipesQuery } from '../features/recipes/hooks';
 import { useRecipeFilters } from '../features/recipes/store';
 import type { Recipe } from '../features/recipes/types';
 
 export default function Home() {
   const { data: recipes, isLoading, error } = useRecipesQuery();
-  const { showFavorites, setShowFavorites } = useRecipeFilters();
-  const [showRandom, setShowRandom] = useState(false);
-  const [showCalendar, setShowCalendar] = useState(false);
+  const { showFavorites } = useRecipeFilters();
   const navigate = useNavigate();
 
   if (isLoading) return <p>Loading...</p>;
@@ -20,63 +15,9 @@ export default function Home() {
   const list = showFavorites ? recipes?.filter((r) => r.favorite) : recipes;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cartoon-yellow via-cartoon-orange to-cartoon-pink paper-texture">
-      {/* Header */}
-      <header className="bg-white shadow-cartoon border-b-4 border-cartoon-blue border-hand-drawn">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-20">
-            <div className="flex items-center">
-              <h1 className="text-4xl font-cartoon font-bold text-gray-900 text-hand animate-bounce-gentle">
-                <span className="text-5xl mr-3 animate-float">🍽️</span>
-                Eat Day
-              </h1>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Quick Actions */}
-        <div className="mb-8 card-cartoon p-6">
-          <h2 className="text-2xl font-cartoon font-bold text-gray-800 mb-6 text-center flex items-center justify-center">
-            <span className="text-3xl mr-3 animate-bounce-gentle">⚡</span>
-            Actions rapides
-          </h2>
-          <div className="grid grid-cols-2 gap-4 sm:flex sm:flex-wrap sm:gap-6 sm:items-center sm:justify-center">
-            <button
-              className="px-6 py-3 bg-cartoon-purple text-white rounded-hand hover:bg-purple-600 transition-all duration-300 hover:scale-105 hover:animate-wiggle shadow-hand-drawn border-2 border-white font-cartoon"
-              onClick={() => setShowFavorites(!showFavorites)}
-            >
-              <span className="text-lg mr-2">{showFavorites ? '📋' : '❤️'}</span>
-              {showFavorites ? 'Toutes les recettes' : 'Mes favoris'}
-            </button>
-            <button
-              className="px-6 py-3 bg-cartoon-gray text-white rounded-hand hover:bg-gray-600 transition-all duration-300 hover:scale-105 hover:animate-wiggle shadow-hand-drawn border-2 border-white font-cartoon"
-              onClick={() => setShowRandom(!showRandom)}
-            >
-              <span className="text-lg mr-2">🎲</span>
-              Mode aléatoire
-            </button>
-            <button
-              className="px-6 py-3 bg-cartoon-blue text-white rounded-hand hover:bg-blue-600 transition-all duration-300 hover:scale-105 hover:animate-wiggle shadow-hand-drawn border-2 border-white font-cartoon"
-              onClick={() => setShowCalendar(!showCalendar)}
-            >
-              <span className="text-lg mr-2">📅</span>
-              Calendrier
-            </button>
-            <button
-              className="px-6 py-3 bg-cartoon-green text-white rounded-hand hover:bg-green-600 transition-all duration-300 hover:scale-105 hover:animate-wiggle shadow-hand-drawn border-2 border-white font-cartoon"
-              onClick={() => navigate('/add')}
-            >
-              <span className="text-lg mr-2">➕</span>
-              Ajouter
-            </button>
-          </div>
-        </div>
-
-        {/* Stats */}
-        <div className="mb-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div>
+      {/* Stats */}
+      <div className="mb-8 grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="card-cartoon p-6 hover:scale-105 transition-all duration-300">
             <div className="flex items-center justify-center">
               <div className="flex-shrink-0">
@@ -99,22 +40,10 @@ export default function Home() {
               </div>
             </div>
           </div>
-        </div>
+      </div>
 
-        {showRandom && (
-          <div className="mb-8">
-            <RandomRecipe onEdit={(r) => navigate(`/edit/${r.id}`)} />
-          </div>
-        )}
-
-        {showCalendar && (
-          <div className="mb-8">
-            <MealCalendar />
-          </div>
-        )}
-
-        {/* Recipes Grid */}
-        {isLoading ? (
+      {/* Recipes Grid */}
+      {isLoading ? (
           <div className="flex flex-col justify-center items-center py-16 card-cartoon">
             <span className="text-6xl animate-spin mb-4">⏳</span>
             <div className="text-xl font-cartoon text-gray-600 text-hand">Chargement des recettes magiques...</div>
@@ -146,7 +75,6 @@ export default function Home() {
             ))}
           </div>
         )}
-      </main>
     </div>
   );
 }

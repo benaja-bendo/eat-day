@@ -4,6 +4,15 @@ import type { Recipe, MealCalendar } from './types';
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 /**
+ * Construit l'URL complète pour une image
+ */
+export function getImageUrl(imagePath: string | null | undefined): string | undefined {
+  if (!imagePath) return undefined;
+  if (imagePath.startsWith('http')) return imagePath;
+  return `${API_BASE_URL}${imagePath}`;
+}
+
+/**
  * Récupère toutes les recettes depuis l'API
  */
 export async function fetchRecipes(): Promise<Recipe[]> {
@@ -28,43 +37,32 @@ export async function fetchRecipeById(id: number): Promise<Recipe> {
 /**
  * Crée une nouvelle recette
  */
-export async function createRecipe(recipe: Omit<Recipe, 'id' | 'createdAt'>): Promise<Recipe> {
-  const newRecipe = {
-    ...recipe,
-    createdAt: new Date().toISOString(),
-  };
-  
+export async function createRecipe(formData: FormData): Promise<Recipe> {
   const response = await fetch(`${API_BASE_URL}/recipes`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(newRecipe),
+    body: formData,
   });
-  
+
   if (!response.ok) {
     throw new Error('Erreur lors de la création de la recette');
   }
-  
+
   return response.json();
 }
 
 /**
  * Met à jour une recette existante
  */
-export async function updateRecipe(id: number, recipe: Partial<Recipe>): Promise<Recipe> {
+export async function updateRecipe(id: number, formData: FormData): Promise<Recipe> {
   const response = await fetch(`${API_BASE_URL}/recipes/${id}`, {
     method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(recipe),
+    body: formData,
   });
-  
+
   if (!response.ok) {
     throw new Error(`Erreur lors de la mise à jour de la recette ${id}`);
   }
-  
+
   return response.json();
 }
 
@@ -85,7 +83,9 @@ export async function deleteRecipe(id: number): Promise<void> {
  * Toggle le statut favori d'une recette
  */
 export async function toggleRecipeFavorite(id: number, favorite: boolean): Promise<Recipe> {
-  return updateRecipe(id, { favorite });
+  const formData = new FormData();
+  formData.append('favorite', String(favorite));
+  return updateRecipe(id, formData);
 }
 
 /**
@@ -139,4 +139,11 @@ export async function updateMealCalendar(calendar: Partial<MealCalendar>): Promi
   }
 
   return response.json();
+}
+
+/**
+ * Récupère la playlist quotidienne (alias pour fetchMealCalendar)
+ */
+export async function fetchPlaylist(): Promise<MealCalendar> {
+  return fetchMealCalendar();
 }

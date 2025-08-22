@@ -4,35 +4,65 @@
       "id": 1,
       "name": "Pâtes à l’ail et au citron",
       "description": "Rapide, frais, parfait pour un dîner en semaine.",
+      "image": "https://source.unsplash.com/featured/?pasta",
       "ingredients": [
-        {
-          "name": "Spaghetti",
-          "quantity": "200g"
-        },
-        {
-          "name": "Ail",
-          "quantity": "2 gousses"
-        },
-        {
-          "name": "Citron",
-          "quantity": "1"
-        }
+        { "name": "Spaghetti", "quantity": "200g" },
+        { "name": "Ail", "quantity": "2 gousses" },
+        { "name": "Citron", "quantity": "1" }
       ],
-      "occasions": [
-        "dîner"
-      ],
-      "preferences": [
-        "rapide",
-        "budget"
-      ],
+      "occasions": ["dîner"],
+      "preferences": ["rapide", "budget"],
       "favorite": false,
       "createdAt": "2025-08-21T10:00:00Z"
+    },
+    {
+      "id": 2,
+      "name": "Salade de quinoa colorée",
+      "description": "Légère et nutritive avec légumes croquants.",
+      "image": "https://source.unsplash.com/featured/?quinoa",
+      "ingredients": [
+        { "name": "Quinoa", "quantity": "150g" },
+        { "name": "Tomates cerises", "quantity": "10" },
+        { "name": "Concombre", "quantity": "1" }
+      ],
+      "occasions": ["déjeuner"],
+      "preferences": ["healthy"],
+      "favorite": true,
+      "createdAt": "2025-08-20T12:00:00Z"
+    },
+    {
+      "id": 3,
+      "name": "Tacos végétariens croustillants",
+      "description": "Tacos garnis de légumes et de salsa épicée.",
+      "image": "https://source.unsplash.com/featured/?tacos",
+      "ingredients": [
+        { "name": "Tortillas", "quantity": "4" },
+        { "name": "Haricots noirs", "quantity": "200g" },
+        { "name": "Poivron", "quantity": "1" }
+      ],
+      "occasions": ["dîner"],
+      "preferences": ["végétarien", "spicy"],
+      "favorite": false,
+      "createdAt": "2025-08-19T18:30:00Z"
+    },
+    {
+      "id": 4,
+      "name": "Soupe réconfortante à la courge",
+      "description": "Velouté de courge butternut pour soirées fraîches.",
+      "image": "https://source.unsplash.com/featured/?soup",
+      "ingredients": [
+        { "name": "Courge", "quantity": "1" },
+        { "name": "Oignon", "quantity": "1" },
+        { "name": "Bouillon", "quantity": "500ml" }
+      ],
+      "occasions": ["déjeuner", "dîner"],
+      "preferences": ["hiver"],
+      "favorite": false,
+      "createdAt": "2025-08-18T09:15:00Z"
     }
   ],
   "calendar": {
     "todayRecipeId": 1,
-    "plannedIds": [
-      1
-    ]
+    "plannedIds": [1, 2, 3, 4]
   }
 }
