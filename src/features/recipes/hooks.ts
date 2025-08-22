@@ -8,6 +8,7 @@ import {
   toggleRecipeFavorite,
   fetchRandomRecipe,
   fetchMealCalendar,
+  fetchPlaylist,
 } from './api';
 
 /**
@@ -108,5 +109,15 @@ export function useMealCalendarQuery() {
   return useQuery({
     queryKey: ['mealCalendar'],
     queryFn: fetchMealCalendar,
+  });
+}
+
+/**
+ * Hook pour récupérer la playlist quotidienne
+ */
+export function usePlaylistQuery() {
+  return useQuery({
+    queryKey: ['playlist'],
+    queryFn: fetchPlaylist,
   });
 }

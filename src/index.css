@@ -1,9 +1,9 @@
+/* Import Google Fonts pour le thème cartoon - temporairement commenté pour éviter les erreurs PostCSS */
+/* @import url('https://fonts.googleapis.com/css2?family=Fredoka+One:wght@400&family=Fredoka:wght@300;400;500;600;700&display=swap'); */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* Import Google Fonts pour le thème cartoon */
-@import url('https://fonts.googleapis.com/css2?family=Fredoka+One:wght@400&family=Fredoka:wght@300;400;500;600;700&display=swap');
 
 /* Variables CSS pour le thème cartoon */
 :root {

@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router';
 import type { Recipe } from '../features/recipes/types';
 import { useToggleFavoriteMutation, useDeleteRecipeMutation } from '../features/recipes/hooks';
+import { getImageUrl } from '../features/recipes/api';
 import { playClick, playSuccess, playError, playSoundIfEnabled } from '../utils/sound';
 import { createConfettiEffect, shakeElement } from '../utils/animations';
 
@@ -75,7 +76,7 @@ export default function RecipeCard({ recipe, onEdit }: Props) {
       {/* Image */}
       {recipe.image && (
         <img
-          src={recipe.image}
+          src={getImageUrl(recipe.image)}
           alt={recipe.name}
           className="w-full h-40 object-cover"
         />

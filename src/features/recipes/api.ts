@@ -4,6 +4,15 @@ import type { Recipe, MealCalendar } from './types';
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 /**
+ * Construit l'URL complète pour une image
+ */
+export function getImageUrl(imagePath: string | null | undefined): string | undefined {
+  if (!imagePath) return undefined;
+  if (imagePath.startsWith('http')) return imagePath;
+  return `${API_BASE_URL}${imagePath}`;
+}
+
+/**
  * Récupère toutes les recettes depuis l'API
  */
 export async function fetchRecipes(): Promise<Recipe[]> {
@@ -130,4 +139,11 @@ export async function updateMealCalendar(calendar: Partial<MealCalendar>): Promi
   }
 
   return response.json();
+}
+
+/**
+ * Récupère la playlist quotidienne (alias pour fetchMealCalendar)
+ */
+export async function fetchPlaylist(): Promise<MealCalendar> {
+  return fetchMealCalendar();
 }

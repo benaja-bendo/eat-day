@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate, useParams } from 'react-router';
 import { useRecipeQuery, useToggleFavoriteMutation, useDeleteRecipeMutation } from '../features/recipes/hooks';
+import { getImageUrl } from '../features/recipes/api';
 import { playClick, playSuccess, playError, playSoundIfEnabled } from '../utils/sound';
 import { createConfettiEffect, shakeElement } from '../utils/animations';
 
@@ -133,7 +134,7 @@ export const RecipeDetails = () => {
         <div className="card-cartoon p-6">
           {recipe.image && (
             <img
-              src={recipe.image}
+              src={getImageUrl(recipe.image)}
               alt={recipe.name}
               className="w-full h-60 object-cover rounded-hand mb-6"
             />

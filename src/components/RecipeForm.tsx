@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import type { Recipe, Ingredient } from '../features/recipes/types';
+import { getImageUrl } from '../features/recipes/api';
 import { playClick, playSuccess, playError, playSoundIfEnabled } from '../utils/sound';
 import { shakeElement, bounceElement, pulseElement, wiggleElement, createConfettiEffect } from '../utils/animations';
 
@@ -34,7 +35,7 @@ export const RecipeForm: React.FC<RecipeFormProps> = ({
   const [preferences, setPreferences] = useState<string[]>(recipe?.preferences || []);
   const [isFavorite, setIsFavorite] = useState(recipe?.favorite || false);
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | undefined>(recipe?.image);
+  const [imagePreview, setImagePreview] = useState<string | undefined>(getImageUrl(recipe?.image));
   
   // Options prédéfinies
   const occasionOptions = [
