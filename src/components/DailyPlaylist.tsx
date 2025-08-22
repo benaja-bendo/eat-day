@@ -1,20 +1,15 @@
 import React from 'react';
-import RecipeCard from './RecipeCard';
 import { usePlaylistQuery } from '../features/recipes/hooks';
 import { playClick, playSoundIfEnabled } from '../utils/sound';
-import { bounceElement, pulseElement, createParticleEffect } from '../utils/animations';
-import type { Recipe } from '../features/recipes/types';
-
-interface DailyPlaylistProps {
-  onEdit?: (recipe: Recipe) => void;
-}
+import { bounceElement, createParticleEffect } from '../utils/animations';
 
 /**
  * Composant pour afficher la playlist quotidienne avec la recette du jour
  * et les recettes planifiées
  */
-export const DailyPlaylist: React.FC<DailyPlaylistProps> = ({ onEdit }) => {
+export const DailyPlaylist: React.FC = () => {
   const { data: playlist, isLoading, error, refetch } = usePlaylistQuery();
+  const plannedIds = Object.values(playlist?.schedule || {}).flat();
 
   /**
    * Actualise la playlist
@@ -135,7 +130,7 @@ export const DailyPlaylist: React.FC<DailyPlaylistProps> = ({ onEdit }) => {
         )}
 
         {/* Recettes planifiées */}
-        {playlist.plannedIds && playlist.plannedIds.length > 0 && (
+        {plannedIds.length > 0 && (
           <div className="bg-cartoon-blue bg-opacity-20 p-6 rounded-hand border-2 border-cartoon-blue border-dashed">
             <div className="flex flex-col md:flex-row items-center justify-center md:justify-start mb-6">
               <span className="text-2xl font-cartoon font-bold text-blue-600 flex items-center text-hand">
@@ -143,11 +138,11 @@ export const DailyPlaylist: React.FC<DailyPlaylistProps> = ({ onEdit }) => {
                 Recettes planifiées
               </span>
               <div className="ml-0 md:ml-4 mt-2 md:mt-0 px-4 py-2 bg-cartoon-blue text-white rounded-hand text-sm font-cartoon shadow-cartoon">
-                {playlist.plannedIds.length} recette{playlist.plannedIds.length > 1 ? 's' : ''}
+                {plannedIds.length} recette{plannedIds.length > 1 ? 's' : ''}
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {playlist.plannedIds.map((recipeId, index) => (
+              {plannedIds.map((recipeId, index) => (
                 <div key={recipeId} className="bg-white border-2 border-cartoon-blue rounded-hand p-6 shadow-cartoon hover:scale-105 transition-all duration-300 hover:animate-wiggle">
                   <div className="text-center">
                     <span className="text-3xl mb-3 block animate-float" style={{animationDelay: `${index * 0.2}s`}}>🍳</span>
@@ -166,7 +161,7 @@ export const DailyPlaylist: React.FC<DailyPlaylistProps> = ({ onEdit }) => {
         )}
 
         {/* Message si pas de recettes planifiées */}
-        {(!playlist.plannedIds || playlist.plannedIds.length === 0) && !playlist.todayRecipeId && (
+        {plannedIds.length === 0 && !playlist.todayRecipeId && (
           <div className="text-center py-12 bg-gray-50 rounded-hand border-2 border-gray-200 border-dashed">
             <div className="text-6xl mb-6 animate-bounce-gentle">🍽️</div>
             <p className="text-xl font-cartoon text-gray-500 mb-4 text-hand">

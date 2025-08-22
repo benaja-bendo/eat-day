@@ -7,6 +7,7 @@ import EditRecipe from './pages/EditRecipe';
 import RecipeDetails from './pages/RecipeDetails';
 import Random from './pages/Random';
 import Calendar from './pages/Calendar';
+import IngredientSearch from './pages/IngredientSearch';
 
 export default function App() {
   const location = useLocation();
@@ -29,6 +30,7 @@ export default function App() {
             <Route path="/recipe/:id" element={<RecipeDetails />} />
             <Route path="/random" element={<Random />} />
             <Route path="/calendar" element={<Calendar />} />
+            <Route path="/ingredients" element={<IngredientSearch />} />
           </Route>
         </Routes>
       </motion.div>

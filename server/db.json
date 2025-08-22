@@ -63,6 +63,6 @@
   ],
   "calendar": {
     "todayRecipeId": 1,
-    "plannedIds": [1, 2, 3, 4]
+    "schedule": {}
   }
 }
