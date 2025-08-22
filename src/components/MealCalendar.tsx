@@ -1,184 +1,250 @@
-import React from 'react';
-import { useMealCalendarQuery } from '../features/recipes/hooks';
+import React, { useState } from 'react';
 import { playClick, playSoundIfEnabled } from '../utils/sound';
 import { bounceElement, createParticleEffect } from '../utils/animations';
 
-/**
- * Composant pour afficher le calendrier des repas planifiés
- * et la recette du jour
- */
-export const MealCalendar: React.FC = () => {
-  const { data: calendar, isLoading, error, refetch } = useMealCalendarQuery();
+interface Schedule {
+  [date: string]: number[];
+}
 
-  /**
-   * Actualise le calendrier
-   */
-  const handleRefreshCalendar = (event: React.MouseEvent<HTMLButtonElement>) => {
-    playSoundIfEnabled(playClick);
-    const button = event.currentTarget;
-    bounceElement(button);
-    createParticleEffect(button);
-    refetch();
+function formatDate(dateStr: string): string {
+  return new Date(dateStr).toLocaleDateString('fr-FR', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+  });
+}
+
+function getMonthMatrix(current: Date): Date[][] {
+  const year = current.getFullYear();
+  const month = current.getMonth();
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+  const startWeekday = (firstDay.getDay() + 6) % 7; // Monday first
+  const totalDays = lastDay.getDate();
+  const totalCells = Math.ceil((startWeekday + totalDays) / 7) * 7;
+  const matrix: Date[][] = [];
+  const iterator = new Date(year, month, 1 - startWeekday);
+  for (let i = 0; i < totalCells; i++) {
+    const weekIndex = Math.floor(i / 7);
+    if (!matrix[weekIndex]) matrix[weekIndex] = [];
+    matrix[weekIndex].push(new Date(iterator));
+    iterator.setDate(iterator.getDate() + 1);
+  }
+  return matrix;
+}
+
+export const MealCalendar: React.FC = () => {
+  const [mode, setMode] = useState<'month' | 'planning'>('month');
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [schedule, setSchedule] = useState<Schedule>({});
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [input, setInput] = useState('');
+
+  const todayKey = new Date().toISOString().split('T')[0];
+
+  const addRecipes = (dateKey: string) => {
+    const ids = input
+      .split(',')
+      .map((s) => parseInt(s.trim(), 10))
+      .filter(Boolean);
+    if (!ids.length) return;
+    setSchedule((prev) => ({
+      ...prev,
+      [dateKey]: [...(prev[dateKey] || []), ...ids],
+    }));
+    setInput('');
+    setSelectedDate(null);
   };
 
-  if (isLoading) {
-    return (
-      <div className="bg-white rounded-lg shadow-lg p-6">
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-          <span className="ml-3 text-gray-600">Chargement du calendrier...</span>
-        </div>
-      </div>
-    );
-  }
+  const handleModeChange = (
+    event: React.MouseEvent<HTMLButtonElement>,
+    next: 'month' | 'planning',
+  ) => {
+    playSoundIfEnabled(playClick);
+    bounceElement(event.currentTarget);
+    createParticleEffect(event.currentTarget);
+    setMode(next);
+  };
 
-  if (error) {
-    return (
-      <div className="bg-white rounded-lg shadow-lg p-6">
-        <div className="bg-red-50 border border-red-200 rounded-md p-4">
-          <div className="flex">
-            <div className="flex-shrink-0">
-              <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-red-800">
-                Erreur de chargement
-              </h3>
-              <div className="mt-2 text-sm text-red-700">
-                <p>Impossible de charger le calendrier. Veuillez réessayer.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!calendar) {
-    return (
-      <div className="bg-white rounded-lg shadow-lg p-6">
-        <div className="text-center py-12">
-          <div className="text-6xl mb-4">📅</div>
-          <p className="text-gray-500 mb-4">
-            Aucun calendrier disponible pour le moment.
-          </p>
-          <button
-            onClick={handleRefreshCalendar}
-            className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
-          >
-            Charger le calendrier
-          </button>
-        </div>
-      </div>
-    );
-  }
+  const monthMatrix = getMonthMatrix(currentMonth);
 
   return (
-    <div className="card-cartoon max-w-4xl mx-auto p-8 paper-texture">
-      {/* En-tête */}
-      <div className="flex flex-col md:flex-row items-center justify-between mb-8">
-        <div className="text-center md:text-left mb-4 md:mb-0">
-          <h2 className="text-3xl font-cartoon font-bold text-gray-800 flex items-center justify-center md:justify-start text-hand">
-            <span className="text-4xl mr-3 animate-bounce-gentle">📅</span>
-            Calendrier des repas
-          </h2>
-          <p className="text-gray-600 mt-2 font-cartoon text-hand">
-            Vos repas planifiés et la recette du jour
-          </p>
-        </div>
-        <button
-          onClick={handleRefreshCalendar}
-          className="bg-cartoon-purple text-white px-6 py-3 rounded-hand hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-all duration-300 hover:scale-105 hover:animate-wiggle shadow-hand-drawn border-2 border-white font-cartoon flex items-center"
-        >
-          <span className="mr-2 text-xl">🔄</span>
-          Actualiser
-        </button>
-      </div>
-
-      <div className="space-y-8">
-        {/* Recette du jour */}
-        {calendar.todayRecipeId && (
-          <div className="bg-cartoon-yellow bg-opacity-20 p-6 rounded-hand border-2 border-cartoon-yellow border-dashed">
-            <div className="flex flex-col md:flex-row items-center justify-center md:justify-start mb-6">
-              <span className="text-2xl font-cartoon font-bold text-orange-600 flex items-center text-hand">
-                <span className="text-3xl mr-3 animate-pulse-soft">⭐</span>
-                Repas du jour
-              </span>
-              <div className="ml-0 md:ml-4 mt-2 md:mt-0 px-4 py-2 bg-cartoon-orange text-white rounded-hand text-sm font-cartoon shadow-cartoon">
-                À savourer aujourd'hui
-              </div>
-            </div>
-            <div className="text-center">
-              <div className="bg-white border-2 border-cartoon-yellow rounded-hand p-6 shadow-cartoon hover:scale-105 transition-all duration-300">
-                <span className="text-4xl mb-4 block animate-bounce-gentle">🍽️</span>
-                <p className="text-xl font-cartoon text-gray-700 text-hand mb-2">Recette sélectionnée : #{calendar.todayRecipeId}</p>
-                <p className="text-sm font-cartoon text-gray-500 text-hand">Repas prévu pour aujourd'hui</p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Repas planifiés */}
-        {calendar.plannedIds && calendar.plannedIds.length > 0 && (
-          <div className="bg-cartoon-blue bg-opacity-20 p-6 rounded-hand border-2 border-cartoon-blue border-dashed">
-            <div className="flex flex-col md:flex-row items-center justify-center md:justify-start mb-6">
-              <span className="text-2xl font-cartoon font-bold text-blue-600 flex items-center text-hand">
-                <span className="text-3xl mr-3 animate-bounce-gentle">📋</span>
-                Repas planifiés
-              </span>
-              <div className="ml-0 md:ml-4 mt-2 md:mt-0 px-4 py-2 bg-cartoon-blue text-white rounded-hand text-sm font-cartoon shadow-cartoon">
-                {calendar.plannedIds.length} recette{calendar.plannedIds.length > 1 ? 's' : ''}
-              </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {calendar.plannedIds.map((recipeId, index) => (
-                <div key={recipeId} className="bg-white border-2 border-cartoon-blue rounded-hand p-6 shadow-cartoon hover:scale-105 transition-all duration-300 hover:animate-wiggle">
-                  <div className="text-center">
-                    <span className="text-3xl mb-3 block animate-float" style={{animationDelay: `${index * 0.2}s`}}>🍳</span>
-                    <div className="mb-2">
-                      <span className="text-lg font-cartoon font-bold text-gray-700 text-hand">
-                        Recette #{index + 1}
-                      </span>
-                    </div>
-                    <p className="text-gray-600 font-cartoon text-hand mb-1">ID: {recipeId}</p>
-                    <p className="text-sm font-cartoon text-gray-500 text-hand">Prévu pour plus tard</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Message si rien de planifié */}
-        {(!calendar.plannedIds || calendar.plannedIds.length === 0) && !calendar.todayRecipeId && (
-          <div className="text-center py-12 bg-gray-50 rounded-hand border-2 border-gray-200 border-dashed">
-            <div className="text-6xl mb-6 animate-bounce-gentle">🍽️</div>
-            <p className="text-xl font-cartoon text-gray-500 mb-4 text-hand">
-              Aucun repas planifié pour l'instant.
-            </p>
-            <p className="text-lg font-cartoon text-gray-400 text-hand">
-              Utilisez le mode aléatoire pour découvrir de nouvelles recettes !
-            </p>
-          </div>
-        )}
-      </div>
-
-      {/* Actions */}
-      <div className="mt-8 pt-6 border-t-2 border-cartoon-yellow border-dashed">
-        <div className="flex justify-center">
+    <div className="card-cartoon max-w-4xl mx-auto p-6 paper-texture">
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-3xl font-cartoon font-bold text-gray-800 flex items-center text-hand">
+          <span className="text-4xl mr-2">📅</span> Calendrier
+        </h2>
+        <div className="flex space-x-2">
           <button
-            onClick={handleRefreshCalendar}
-            className="bg-cartoon-green text-white px-8 py-3 rounded-hand hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all duration-300 hover:scale-105 hover:animate-wiggle shadow-hand-drawn border-2 border-white font-cartoon flex items-center"
+            onClick={(e) => handleModeChange(e, 'month')}
+            className={`px-4 py-2 rounded-hand border-2 border-white shadow-hand-drawn font-cartoon ${
+              mode === 'month' ? 'bg-cartoon-purple text-white' : 'bg-white'
+            }`}
           >
-            <span className="mr-3 text-xl">🔄</span>
-            Actualiser le calendrier
+            Mode mois
+          </button>
+          <button
+            onClick={(e) => handleModeChange(e, 'planning')}
+            className={`px-4 py-2 rounded-hand border-2 border-white shadow-hand-drawn font-cartoon ${
+              mode === 'planning' ? 'bg-cartoon-purple text-white' : 'bg-white'
+            }`}
+          >
+            Mode planning
           </button>
         </div>
       </div>
+
+      {/* Today's recipes */}
+      <div className="mb-8">
+        <h3 className="text-xl font-cartoon mb-2 text-hand">Plat du jour</h3>
+        <div className="bg-cartoon-yellow bg-opacity-20 p-4 rounded-hand border-2 border-cartoon-yellow border-dashed">
+          {schedule[todayKey] && schedule[todayKey].length > 0 ? (
+            <ul className="list-disc list-inside font-cartoon text-hand">
+              {schedule[todayKey].map((id) => (
+                <li key={id}>Recette #{id}</li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-gray-600 font-cartoon text-hand">Aucune recette pour aujourd'hui.</p>
+          )}
+          <div className="mt-4 flex">
+            <input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="IDs séparés par des virgules"
+              className="flex-grow px-3 py-2 rounded-hand border-2 border-cartoon-yellow font-cartoon text-hand mr-2"
+            />
+            <button
+              onClick={() => addRecipes(todayKey)}
+              className="bg-cartoon-green text-white px-4 py-2 rounded-hand border-2 border-white shadow-hand-drawn font-cartoon"
+            >
+              Ajouter
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {mode === 'month' && (
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <button
+              onClick={() =>
+                setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1))
+              }
+              className="px-3 py-1 rounded-hand border-2 border-white shadow-hand-drawn font-cartoon bg-white"
+            >
+              ◀
+            </button>
+            <span className="font-cartoon text-hand text-xl">
+              {currentMonth.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
+            </span>
+            <button
+              onClick={() =>
+                setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1))
+              }
+              className="px-3 py-1 rounded-hand border-2 border-white shadow-hand-drawn font-cartoon bg-white"
+            >
+              ▶
+            </button>
+          </div>
+          <div className="grid grid-cols-7 gap-2 text-center font-cartoon text-hand mb-2">
+            {['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'].map((d) => (
+              <div key={d} className="font-bold">
+                {d}
+              </div>
+            ))}
+          </div>
+          <div className="grid grid-cols-7 gap-2">
+            {monthMatrix.flat().map((day) => {
+              const key = day.toISOString().split('T')[0];
+              const isCurrent = day.getMonth() === currentMonth.getMonth();
+              const recipes = schedule[key]?.length || 0;
+              return (
+                <button
+                  key={key}
+                  onClick={() => {
+                    setSelectedDate(key);
+                    setInput('');
+                  }}
+                  className={`h-20 rounded-hand border-2 flex flex-col items-center justify-center font-cartoon text-hand ${
+                    isCurrent
+                      ? 'bg-white border-cartoon-blue shadow-hand-drawn'
+                      : 'bg-gray-100 border-gray-200 text-gray-400'
+                  }`}
+                >
+                  <span>{day.getDate()}</span>
+                  {recipes > 0 && (
+                    <span className="text-xs mt-1">
+                      {recipes} recette{recipes > 1 ? 's' : ''}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {selectedDate && (
+            <div className="mt-6 p-4 bg-white rounded-hand border-2 border-cartoon-purple shadow-hand-drawn">
+              <h4 className="font-cartoon text-hand text-lg mb-2">{formatDate(selectedDate)}</h4>
+              {schedule[selectedDate] && schedule[selectedDate].length > 0 ? (
+                <ul className="list-disc list-inside font-cartoon text-hand mb-4">
+                  {schedule[selectedDate].map((id) => (
+                    <li key={id}>Recette #{id}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="font-cartoon text-hand mb-4">Aucune recette.</p>
+              )}
+              <div className="flex">
+                <input
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder="IDs séparés par des virgules"
+                  className="flex-grow px-3 py-2 rounded-hand border-2 border-cartoon-purple font-cartoon text-hand mr-2"
+                />
+                <button
+                  onClick={() => addRecipes(selectedDate)}
+                  className="bg-cartoon-green text-white px-4 py-2 rounded-hand border-2 border-white shadow-hand-drawn font-cartoon mr-2"
+                >
+                  Ajouter
+                </button>
+                <button
+                  onClick={() => setSelectedDate(null)}
+                  className="bg-cartoon-red text-white px-4 py-2 rounded-hand border-2 border-white shadow-hand-drawn font-cartoon"
+                >
+                  Fermer
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {mode === 'planning' && (
+        <div>
+          {Object.keys(schedule).length === 0 && (
+            <p className="text-center font-cartoon text-hand text-gray-600">Aucun plat planifié.</p>
+          )}
+          {Object.entries(schedule)
+            .sort(([a], [b]) => a.localeCompare(b))
+            .map(([date, ids]) => (
+              <div
+                key={date}
+                className="mb-4 p-4 bg-white rounded-hand border-2 border-cartoon-blue shadow-hand-drawn"
+              >
+                <h4 className="font-cartoon text-hand text-lg mb-2">{formatDate(date)}</h4>
+                <ul className="list-disc list-inside font-cartoon text-hand">
+                  {ids.map((id) => (
+                    <li key={id}>Recette #{id}</li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+        </div>
+      )}
     </div>
   );
 };
 
 export default MealCalendar;
+
