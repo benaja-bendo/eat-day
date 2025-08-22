@@ -131,6 +131,13 @@ export const RecipeDetails = () => {
 
         {/* Contenu principal */}
         <div className="card-cartoon p-6">
+          {recipe.image && (
+            <img
+              src={recipe.image}
+              alt={recipe.name}
+              className="w-full h-60 object-cover rounded-hand mb-6"
+            />
+          )}
           <h1 className="text-3xl font-cartoon font-bold text-gray-800 mb-4 text-hand">{recipe.name}</h1>
           <p className="text-gray-700 mb-6 text-hand">{recipe.description}</p>
 
