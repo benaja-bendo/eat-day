@@ -2,6 +2,8 @@
 
 Ce guide vous explique comment utiliser l'application Eat Day avec Docker.
 
+Une image officielle est automatiquement construite et publiée sur Docker Hub à chaque push sur la branche `main` grâce à GitHub Actions.
+
 ## 📋 Prérequis
 
 - Docker installé sur votre système
