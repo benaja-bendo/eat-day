@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router';
 import type { Recipe } from '../features/recipes/types';
 import { useToggleFavoriteMutation, useDeleteRecipeMutation } from '../features/recipes/hooks';
@@ -80,7 +81,7 @@ export default function RecipeCard({ recipe, onEdit }: Props) {
   return (
     <div className="card-cartoon group relative p-6 transition-all duration-300 hover:rotate-1 animate-float">
       {/* Badge favori */}
-      <button
+      <motion.button
         onClick={handleToggleFavorite}
         className={`absolute -top-3 -right-3 rounded-full p-3 text-3xl transition-all duration-300 hover:scale-125 hover:animate-bounce-gentle shadow-cartoon ${
           recipe.favorite
@@ -88,9 +89,17 @@ export default function RecipeCard({ recipe, onEdit }: Props) {
             : 'bg-paper-white text-gray-400 hover:bg-cartoon-pink hover:text-white border-2 border-cartoon-pink'
         }`}
         title={recipe.favorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+        whileTap={{ scale: 0.9 }}
       >
-        {recipe.favorite ? '💖' : '🤍'}
-      </button>
+        <motion.span
+          key={recipe.favorite ? 'fav' : 'not'}
+          initial={{ scale: 0, rotate: -45 }}
+          animate={{ scale: 1, rotate: 0 }}
+          transition={{ type: 'spring', stiffness: 260, damping: 20 }}
+        >
+          {recipe.favorite ? '💖' : '🤍'}
+        </motion.span>
+      </motion.button>
 
       {/* Contenu principal */}
       <div className="mb-6">

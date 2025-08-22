@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 import { useNavigate, useParams } from 'react-router';
 import { useRecipeQuery, useToggleFavoriteMutation, useDeleteRecipeMutation } from '../features/recipes/hooks';
 import { playClick, playSuccess, playError, playSoundIfEnabled } from '../utils/sound';
@@ -79,7 +80,12 @@ export const RecipeDetails = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cartoon-yellow via-cartoon-orange to-cartoon-pink paper-texture py-8">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="min-h-screen bg-gradient-to-br from-cartoon-yellow via-cartoon-orange to-cartoon-pink paper-texture py-8"
+    >
       <div className="container mx-auto px-4 max-w-3xl">
         {/* En-tête */}
         <div className="mb-8 flex justify-between items-center">
@@ -91,13 +97,21 @@ export const RecipeDetails = () => {
             Retour
           </button>
           <div className="flex gap-3">
-            <button
+            <motion.button
               onClick={handleToggleFavorite}
               className={`px-4 py-2 rounded-hand transition-all duration-300 hover:scale-105 shadow-hand-drawn border-2 border-white font-cartoon flex items-center ${recipe.favorite ? 'bg-cartoon-red text-white hover:bg-red-600' : 'bg-paper-white text-gray-700 hover:bg-cartoon-pink hover:text-white'}`}
               title={recipe.favorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+              whileTap={{ scale: 0.9 }}
             >
-              {recipe.favorite ? '💖' : '🤍'}
-            </button>
+              <motion.span
+                key={recipe.favorite ? 'fav' : 'not'}
+                initial={{ scale: 0, rotate: -45 }}
+                animate={{ scale: 1, rotate: 0 }}
+                transition={{ type: 'spring', stiffness: 260, damping: 20 }}
+              >
+                {recipe.favorite ? '💖' : '🤍'}
+              </motion.span>
+            </motion.button>
             <button
               onClick={() => { playSoundIfEnabled(playClick); navigate(`/edit/${recipe.id}`); }}
               className="px-4 py-2 bg-cartoon-purple text-white rounded-hand hover:bg-purple-600 transition-all duration-300 hover:scale-105 shadow-hand-drawn border-2 border-white font-cartoon flex items-center"
@@ -185,7 +199,7 @@ export const RecipeDetails = () => {
           )}
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
