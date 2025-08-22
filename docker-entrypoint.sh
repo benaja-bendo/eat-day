@@ -3,7 +3,7 @@
 # Script de démarrage pour l'application Eat Day
 # Lance le serveur backend qui sert aussi le frontend
 
-set -e
+set -eu
 
 echo "🚀 Démarrage de l'application Eat Day..."
 
@@ -39,3 +39,4 @@ echo "🌐 Démarrage du serveur sur le port $PORT..."
 
 # Démarrer le serveur Node.js
 exec node server/index.js
+
