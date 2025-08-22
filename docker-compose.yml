@@ -1,0 +1,42 @@
+# Docker Compose pour l'application Eat Day
+# Permet de lancer l'application avec des volumes persistants optionnels
+
+version: '3.8'
+
+services:
+  eat-day:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: eat-day-app
+    ports:
+      - "3001:3001"  # Port principal de l'application
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+    # volumes:
+      # Volume optionnel pour la persistance des données
+      # Décommentez les lignes suivantes pour activer la persistance
+      # - ./data:/app/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001/recipes"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+# Configuration des volumes nommés (alternative aux volumes bind)
+volumes:
+  eat-day-data:
+    driver: local
+
+# Exemple d'utilisation avec volumes nommés :
+# Remplacez la section volumes du service par :
+# volumes:
+#   - eat-day-data:/app/data
+
+# Exemple d'utilisation avec volumes bind (recommandé pour le développement) :
+# volumes:
+#   - ./data:/app/data
+#   - ./uploads:/app/data/uploads
