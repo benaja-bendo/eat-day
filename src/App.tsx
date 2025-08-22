@@ -1,9 +1,12 @@
 import { Routes, Route, useLocation } from 'react-router';
 import { useTransition, animated } from '@react-spring/web';
+import MainLayout from './layouts/MainLayout';
 import Home from './pages/Home';
 import AddRecipe from './pages/AddRecipe';
 import EditRecipe from './pages/EditRecipe';
 import RecipeDetails from './pages/RecipeDetails';
+import Random from './pages/Random';
+import Calendar from './pages/Calendar';
 
 export default function App() {
   const location = useLocation();
@@ -17,10 +20,14 @@ export default function App() {
   return transitions((style, item) => (
     <animated.div style={style} className="min-h-screen">
       <Routes location={item}>
-        <Route path="/" element={<Home />} />
-        <Route path="/add" element={<AddRecipe />} />
-        <Route path="/edit/:id" element={<EditRecipe />} />
-        <Route path="/recipe/:id" element={<RecipeDetails />} />
+        <Route element={<MainLayout />}>
+          <Route path="/" element={<Home />} />
+          <Route path="/add" element={<AddRecipe />} />
+          <Route path="/edit/:id" element={<EditRecipe />} />
+          <Route path="/recipe/:id" element={<RecipeDetails />} />
+          <Route path="/random" element={<Random />} />
+          <Route path="/calendar" element={<Calendar />} />
+        </Route>
       </Routes>
     </animated.div>
   ));
