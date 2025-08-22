@@ -1,40 +1,25 @@
-import { useState } from 'react';
+import { Routes, Route, useLocation } from 'react-router-dom';
+import { useTransition, animated } from '@react-spring/web';
 import Home from './pages/Home';
 import AddRecipe from './pages/AddRecipe';
 import EditRecipe from './pages/EditRecipe';
-import type { Recipe } from './features/recipes/types';
-
-type View =
-  | { type: 'home' }
-  | { type: 'add' }
-  | { type: 'edit'; recipe: Recipe };
 
 export default function App() {
-  const [view, setView] = useState<View>({ type: 'home' });
+  const location = useLocation();
+  const transitions = useTransition(location, {
+    keys: (loc) => loc.pathname,
+    from: { opacity: 0, transform: 'translate3d(100%,0,0)' },
+    enter: { opacity: 1, transform: 'translate3d(0%,0,0)' },
+    leave: { opacity: 0, transform: 'translate3d(-50%,0,0)' },
+  });
 
-  if (view.type === 'add') {
-    return (
-      <AddRecipe
-        onCancel={() => setView({ type: 'home' })}
-        onSuccess={() => setView({ type: 'home' })}
-      />
-    );
-  }
-
-  if (view.type === 'edit') {
-    return (
-      <EditRecipe
-        recipeId={view.recipe.id}
-        onCancel={() => setView({ type: 'home' })}
-        onSuccess={() => setView({ type: 'home' })}
-      />
-    );
-  }
-
-  return (
-    <Home
-      onAddRecipe={() => setView({ type: 'add' })}
-      onEditRecipe={(recipe) => setView({ type: 'edit', recipe })}
-    />
-  );
+  return transitions((style, item) => (
+    <animated.div style={style} className="min-h-screen">
+      <Routes location={item}>
+        <Route path="/" element={<Home />} />
+        <Route path="/add" element={<AddRecipe />} />
+        <Route path="/edit/:id" element={<EditRecipe />} />
+      </Routes>
+    </animated.div>
+  ));
 }

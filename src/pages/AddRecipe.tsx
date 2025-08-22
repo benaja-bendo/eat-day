@@ -1,19 +1,15 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { RecipeForm } from '../components/RecipeForm';
 import { useCreateRecipeMutation } from '../features/recipes/hooks';
 import type { Recipe } from '../features/recipes/types';
 import { playSuccess, playError } from '../utils/sound';
 
-interface AddRecipeProps {
-  onSuccess?: () => void;
-  onCancel?: () => void;
-}
-
 /**
  * Page pour ajouter une nouvelle recette
- * Utilise le composant RecipeForm et le hook useCreateRecipeMutation
  */
-export const AddRecipe: React.FC<AddRecipeProps> = ({ onSuccess, onCancel }) => {
+export const AddRecipe: React.FC = () => {
+  const navigate = useNavigate();
   const createRecipeMutation = useCreateRecipeMutation();
 
   /**
@@ -23,7 +19,7 @@ export const AddRecipe: React.FC<AddRecipeProps> = ({ onSuccess, onCancel }) => 
     try {
       await createRecipeMutation.mutateAsync(recipeData);
       playSuccess();
-      onSuccess?.();
+      navigate('/');
     } catch (error) {
       playError();
       console.error('Erreur lors de la création de la recette:', error);
@@ -34,7 +30,7 @@ export const AddRecipe: React.FC<AddRecipeProps> = ({ onSuccess, onCancel }) => 
    * Gère l'annulation
    */
   const handleCancel = () => {
-    onCancel?.();
+    navigate('/');
   };
 
   return (
@@ -42,15 +38,13 @@ export const AddRecipe: React.FC<AddRecipeProps> = ({ onSuccess, onCancel }) => 
       <div className="container mx-auto px-4">
         {/* En-tête */}
         <div className="mb-8">
-          {onCancel && (
-            <button
-              onClick={handleCancel}
-              className="inline-flex items-center px-6 py-3 bg-cartoon-blue text-white rounded-hand hover:bg-blue-600 transition-all duration-300 hover:scale-105 shadow-hand-drawn border-2 border-white font-cartoon mb-4"
-            >
-              <span className="text-xl mr-2">🏠</span>
-              Retour aux recettes
-            </button>
-          )}
+          <button
+            onClick={handleCancel}
+            className="inline-flex items-center px-6 py-3 bg-cartoon-blue text-white rounded-hand hover:bg-blue-600 transition-all duration-300 hover:scale-105 shadow-hand-drawn border-2 border-white font-cartoon mb-4"
+          >
+            <span className="text-xl mr-2">🏠</span>
+            Retour aux recettes
+          </button>
           <h1 className="text-3xl font-bold text-gray-900 font-cartoon">
             Ajouter une nouvelle recette
           </h1>

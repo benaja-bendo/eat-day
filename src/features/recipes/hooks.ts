@@ -7,7 +7,7 @@ import {
   deleteRecipe,
   toggleRecipeFavorite,
   fetchRandomRecipe,
-  fetchPlaylist,
+  fetchMealCalendar,
 } from './api';
 import type { Recipe } from './types';
 
@@ -103,11 +103,11 @@ export function useRandomRecipeQuery() {
 }
 
 /**
- * Hook pour récupérer la playlist
+ * Hook pour récupérer le calendrier des repas
  */
-export function usePlaylistQuery() {
+export function useMealCalendarQuery() {
   return useQuery({
-    queryKey: ['playlist'],
-    queryFn: fetchPlaylist,
+    queryKey: ['mealCalendar'],
+    queryFn: fetchMealCalendar,
   });
 }

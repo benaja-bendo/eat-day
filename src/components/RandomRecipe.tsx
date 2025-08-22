@@ -36,7 +36,7 @@ export const RandomRecipe: React.FC<RandomRecipeProps> = ({ onEdit }) => {
       const button = event.currentTarget;
       glowElement(button, '#10b981', 1500);
       scaleUpElement(button, 1.1);
-      // TODO: Implémenter la logique pour ajouter à la playlist
+      // TODO: Implémenter la logique pour ajouter au calendrier des repas
       console.log('Recette sélectionnée comme recette du jour:', randomRecipe.name);
     }
   };

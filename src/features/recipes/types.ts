@@ -13,3 +13,8 @@ export interface Recipe {
   favorite: boolean;
   createdAt: string;
 }
+
+export interface MealCalendar {
+  todayRecipeId: number;
+  plannedIds: number[];
+}

@@ -1,4 +1,4 @@
-import type { Recipe } from './types';
+import type { Recipe, MealCalendar } from './types';
 
 // URL de base de l'API (JSON Server)
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
@@ -112,31 +112,31 @@ export async function fetchRandomRecipe(): Promise<Recipe> {
 }
 
 /**
- * Récupère la playlist (recette du jour et recettes planifiées)
+ * Récupère le calendrier des repas planifiés
  */
-export async function fetchPlaylist(): Promise<{ todayRecipeId: number; plannedIds: number[] }> {
-  const response = await fetch(`${API_BASE_URL}/playlist`);
+export async function fetchMealCalendar(): Promise<MealCalendar> {
+  const response = await fetch(`${API_BASE_URL}/calendar`);
   if (!response.ok) {
-    throw new Error('Erreur lors de la récupération de la playlist');
+    throw new Error('Erreur lors de la récupération du calendrier');
   }
   return response.json();
 }
 
 /**
- * Met à jour la playlist
+ * Met à jour le calendrier des repas
  */
-export async function updatePlaylist(playlist: { todayRecipeId?: number; plannedIds?: number[] }): Promise<{ todayRecipeId: number; plannedIds: number[] }> {
-  const response = await fetch(`${API_BASE_URL}/playlist`, {
+export async function updateMealCalendar(calendar: Partial<MealCalendar>): Promise<MealCalendar> {
+  const response = await fetch(`${API_BASE_URL}/calendar`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(playlist),
+    body: JSON.stringify(calendar),
   });
-  
+
   if (!response.ok) {
-    throw new Error('Erreur lors de la mise à jour de la playlist');
+    throw new Error('Erreur lors de la mise à jour du calendrier');
   }
-  
+
   return response.json();
 }

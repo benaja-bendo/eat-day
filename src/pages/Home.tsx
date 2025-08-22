@@ -1,21 +1,18 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import RecipeCard from '../components/RecipeCard';
 import RandomRecipe from '../components/RandomRecipe';
-import DailyPlaylist from '../components/DailyPlaylist';
+import MealCalendar from '../components/MealCalendar';
 import { useRecipesQuery } from '../features/recipes/hooks';
 import { useRecipeFilters } from '../features/recipes/store';
 import type { Recipe } from '../features/recipes/types';
 
-interface HomeProps {
-  onAddRecipe: () => void;
-  onEditRecipe: (recipe: Recipe) => void;
-}
-
-export default function Home({ onAddRecipe, onEditRecipe }: HomeProps) {
+export default function Home() {
   const { data: recipes, isLoading, error } = useRecipesQuery();
   const { showFavorites, setShowFavorites } = useRecipeFilters();
   const [showRandom, setShowRandom] = useState(false);
-  const [showPlaylist, setShowPlaylist] = useState(false);
+  const [showCalendar, setShowCalendar] = useState(false);
+  const navigate = useNavigate();
 
   if (isLoading) return <p>Loading...</p>;
   if (error) return <p>Failed to load recipes</p>;
@@ -46,7 +43,7 @@ export default function Home({ onAddRecipe, onEditRecipe }: HomeProps) {
             <span className="text-3xl mr-3 animate-bounce-gentle">⚡</span>
             Actions rapides
           </h2>
-          <div className="flex flex-wrap gap-6 items-center justify-center">
+          <div className="grid grid-cols-2 gap-4 sm:flex sm:flex-wrap sm:gap-6 sm:items-center sm:justify-center">
             <button
               className="px-6 py-3 bg-cartoon-purple text-white rounded-hand hover:bg-purple-600 transition-all duration-300 hover:scale-105 hover:animate-wiggle shadow-hand-drawn border-2 border-white font-cartoon"
               onClick={() => setShowFavorites(!showFavorites)}
@@ -63,14 +60,14 @@ export default function Home({ onAddRecipe, onEditRecipe }: HomeProps) {
             </button>
             <button
               className="px-6 py-3 bg-cartoon-blue text-white rounded-hand hover:bg-blue-600 transition-all duration-300 hover:scale-105 hover:animate-wiggle shadow-hand-drawn border-2 border-white font-cartoon"
-              onClick={() => setShowPlaylist(!showPlaylist)}
+              onClick={() => setShowCalendar(!showCalendar)}
             >
               <span className="text-lg mr-2">📅</span>
-              Playlist
+              Calendrier
             </button>
             <button
               className="px-6 py-3 bg-cartoon-green text-white rounded-hand hover:bg-green-600 transition-all duration-300 hover:scale-105 hover:animate-wiggle shadow-hand-drawn border-2 border-white font-cartoon"
-              onClick={onAddRecipe}
+              onClick={() => navigate('/add')}
             >
               <span className="text-lg mr-2">➕</span>
               Ajouter
@@ -106,13 +103,13 @@ export default function Home({ onAddRecipe, onEditRecipe }: HomeProps) {
 
         {showRandom && (
           <div className="mb-8">
-            <RandomRecipe onEdit={onEditRecipe} />
+            <RandomRecipe onEdit={(r) => navigate(`/edit/${r.id}`)} />
           </div>
         )}
 
-        {showPlaylist && (
+        {showCalendar && (
           <div className="mb-8">
-            <DailyPlaylist />
+            <MealCalendar />
           </div>
         )}
 
@@ -141,7 +138,10 @@ export default function Home({ onAddRecipe, onEditRecipe }: HomeProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {list?.map((recipe, index) => (
               <div key={recipe.id} className="animate-float" style={{animationDelay: `${index * 0.1}s`}}>
-                <RecipeCard recipe={recipe} onEdit={onEditRecipe} />
+                <RecipeCard
+                  recipe={recipe}
+                  onEdit={(r: Recipe) => navigate(`/edit/${r.id}`)}
+                />
               </div>
             ))}
           </div>
