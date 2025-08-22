@@ -1,5 +1,14 @@
 // Configuration des effets sonores pour l'interface cartoon
-const audioContext = typeof window !== 'undefined' ? new (window.AudioContext || (window as any).webkitAudioContext)() : null;
+declare global {
+  interface Window {
+    webkitAudioContext: typeof AudioContext;
+  }
+}
+
+const audioContext =
+  typeof window !== 'undefined'
+    ? new (window.AudioContext || window.webkitAudioContext)()
+    : null;
 
 /**
  * Joue un son de clic cartoon (pop court et aigu)

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useRandomRecipeQuery } from '../features/recipes/hooks';
 import RecipeCard from './RecipeCard';
-import { playClick, playSuccess, playWhoosh, playSoundIfEnabled } from '../utils/sound';
+import { playSuccess, playWhoosh, playSoundIfEnabled } from '../utils/sound';
 import { createParticleEffect, scaleUpElement, glowElement } from '../utils/animations';
 import type { Recipe } from '../features/recipes/types';
 
@@ -36,7 +36,7 @@ export const RandomRecipe: React.FC<RandomRecipeProps> = ({ onEdit }) => {
       const button = event.currentTarget;
       glowElement(button, '#10b981', 1500);
       scaleUpElement(button, 1.1);
-      // TODO: Implémenter la logique pour ajouter à la playlist
+      // TODO: Implémenter la logique pour ajouter au calendrier des repas
       console.log('Recette sélectionnée comme recette du jour:', randomRecipe.name);
     }
   };

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { Recipe } from '../features/recipes/types';
 import { useToggleFavoriteMutation, useDeleteRecipeMutation } from '../features/recipes/hooks';
 import { playClick, playSuccess, playError, playSoundIfEnabled } from '../utils/sound';
-import { useAnimations, createConfettiEffect, shakeElement } from '../utils/animations';
+import { createConfettiEffect, shakeElement } from '../utils/animations';
 
 interface Props {
   recipe: Recipe;

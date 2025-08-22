@@ -7,7 +7,7 @@ Une application **ludique** pour toi et ta copine afin de **gérer vos recettes*
 Créer une application simple et fun qui permet de :
 
 * **Créer / Lire / Mettre à jour / Supprimer** des recettes (CRUD).
-* Marquer des **favoris**, lancer un **mode aléatoire**, consulter une **playlist** (dont la **recette du jour**).
+* Marquer des **favoris**, lancer un **mode aléatoire**, consulter un **calendrier des repas planifiés** (dont la **recette du jour**).
 * Profiter d’une **UI cartoon** avec **feedbacks audio** et micro-animations.
 
 ---
@@ -45,7 +45,7 @@ Créer une application simple et fun qui permet de :
 
   * Voir **favoris**
   * **Mode aléatoire** (choisir une recette au hasard)
-  * **Playlist** (recettes planifiées, dont **recette du jour**)
+  * **Calendrier** (repas planifiés, dont **repas du jour**)
   * **Ajouter** une recette
 * **Ambiance** : animations (rebond, fade, shake) & **effets sonores** au clic
 
@@ -112,7 +112,7 @@ Créer une application simple et fun qui permet de :
       "createdAt": "2025-08-21T10:00:00Z"
     }
   ],
-  "playlist": {
+  "calendar": {
     "todayRecipeId": 1,
     "plannedIds": [1]
   }
@@ -248,7 +248,7 @@ export const useRecipeFilters = create<FiltersState>((set) => ({
 * Favoris
 * Home avec carte recette + actions
 * Mode aléatoire
-* Playlist (recette du jour + planifiées)
+* Calendrier (repas du jour + planifiés)
 * Sons/animations de base
 * Thème cartoon initial (Tailwind)
 

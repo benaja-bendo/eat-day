@@ -1,10 +1,18 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router';
 import RecipeCard from '../components/RecipeCard';
+import RandomRecipe from '../components/RandomRecipe';
+import MealCalendar from '../components/MealCalendar';
 import { useRecipesQuery } from '../features/recipes/hooks';
 import { useRecipeFilters } from '../features/recipes/store';
+import type { Recipe } from '../features/recipes/types';
 
 export default function Home() {
   const { data: recipes, isLoading, error } = useRecipesQuery();
   const { showFavorites, setShowFavorites } = useRecipeFilters();
+  const [showRandom, setShowRandom] = useState(false);
+  const [showCalendar, setShowCalendar] = useState(false);
+  const navigate = useNavigate();
 
   if (isLoading) return <p>Loading...</p>;
   if (error) return <p>Failed to load recipes</p>;
@@ -29,19 +37,40 @@ export default function Home() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Filters */}
+        {/* Quick Actions */}
         <div className="mb-8 card-cartoon p-6">
           <h2 className="text-2xl font-cartoon font-bold text-gray-800 mb-6 text-center flex items-center justify-center">
-            <span className="text-3xl mr-3 animate-bounce-gentle">🔍</span>
-            Filtrer vos recettes
+            <span className="text-3xl mr-3 animate-bounce-gentle">⚡</span>
+            Actions rapides
           </h2>
-          <div className="flex flex-wrap gap-6 items-center justify-center">
+          <div className="grid grid-cols-2 gap-4 sm:flex sm:flex-wrap sm:gap-6 sm:items-center sm:justify-center">
             <button
               className="px-6 py-3 bg-cartoon-purple text-white rounded-hand hover:bg-purple-600 transition-all duration-300 hover:scale-105 hover:animate-wiggle shadow-hand-drawn border-2 border-white font-cartoon"
               onClick={() => setShowFavorites(!showFavorites)}
             >
               <span className="text-lg mr-2">{showFavorites ? '📋' : '❤️'}</span>
               {showFavorites ? 'Toutes les recettes' : 'Mes favoris'}
+            </button>
+            <button
+              className="px-6 py-3 bg-cartoon-gray text-white rounded-hand hover:bg-gray-600 transition-all duration-300 hover:scale-105 hover:animate-wiggle shadow-hand-drawn border-2 border-white font-cartoon"
+              onClick={() => setShowRandom(!showRandom)}
+            >
+              <span className="text-lg mr-2">🎲</span>
+              Mode aléatoire
+            </button>
+            <button
+              className="px-6 py-3 bg-cartoon-blue text-white rounded-hand hover:bg-blue-600 transition-all duration-300 hover:scale-105 hover:animate-wiggle shadow-hand-drawn border-2 border-white font-cartoon"
+              onClick={() => setShowCalendar(!showCalendar)}
+            >
+              <span className="text-lg mr-2">📅</span>
+              Calendrier
+            </button>
+            <button
+              className="px-6 py-3 bg-cartoon-green text-white rounded-hand hover:bg-green-600 transition-all duration-300 hover:scale-105 hover:animate-wiggle shadow-hand-drawn border-2 border-white font-cartoon"
+              onClick={() => navigate('/add')}
+            >
+              <span className="text-lg mr-2">➕</span>
+              Ajouter
             </button>
           </div>
         </div>
@@ -72,6 +101,18 @@ export default function Home() {
           </div>
         </div>
 
+        {showRandom && (
+          <div className="mb-8">
+            <RandomRecipe onEdit={(r) => navigate(`/edit/${r.id}`)} />
+          </div>
+        )}
+
+        {showCalendar && (
+          <div className="mb-8">
+            <MealCalendar />
+          </div>
+        )}
+
         {/* Recipes Grid */}
         {isLoading ? (
           <div className="flex flex-col justify-center items-center py-16 card-cartoon">
@@ -97,7 +138,10 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {list?.map((recipe, index) => (
               <div key={recipe.id} className="animate-float" style={{animationDelay: `${index * 0.1}s`}}>
-                <RecipeCard recipe={recipe} />
+                <RecipeCard
+                  recipe={recipe}
+                  onEdit={(r: Recipe) => navigate(`/edit/${r.id}`)}
+                />
               </div>
             ))}
           </div>
