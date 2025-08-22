@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router';
 import { playClick, playSoundIfEnabled } from '../utils/sound';
-import { bounceElement, createParticleEffect } from '../utils/animations';
-import { useMealCalendarQuery } from '../features/recipes/hooks';
+import { scaleUpElement } from '../utils/animations';
+import { useMealCalendarQuery, useRecipesQuery } from '../features/recipes/hooks';
 import { updateMealCalendar } from '../features/recipes/api';
+import RecipeAutocomplete from './RecipeAutocomplete';
+import type { Recipe } from '../features/recipes/types';
 
 interface Schedule {
   [date: string]: number[];
@@ -36,14 +39,17 @@ function getMonthMatrix(current: Date): Date[][] {
 }
 
 export const MealCalendar: React.FC = () => {
+  const navigate = useNavigate();
   const { data, refetch } = useMealCalendarQuery();
   const [schedule, setSchedule] = useState<Schedule>({});
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [addOpen, setAddOpen] = useState(false);
   const [viewOpen, setViewOpen] = useState(false);
   const [dialogDate, setDialogDate] = useState(new Date().toISOString().split('T')[0]);
-  const [dialogInput, setDialogInput] = useState('');
+  const [selectedRecipes, setSelectedRecipes] = useState<Recipe[]>([]);
   const [menu, setMenu] = useState<{ x: number; y: number; date: string } | null>(null);
+  
+  const { data: allRecipes = [] } = useRecipesQuery();
 
   useEffect(() => {
     if (data?.schedule) {
@@ -55,7 +61,7 @@ export const MealCalendar: React.FC = () => {
 
   const openAddDialog = (date?: string) => {
     setDialogDate(date || todayKey);
-    setDialogInput('');
+    setSelectedRecipes([]);
     setAddOpen(true);
   };
 
@@ -65,11 +71,8 @@ export const MealCalendar: React.FC = () => {
   };
 
   const handleAdd = async () => {
-    const ids = dialogInput
-      .split(',')
-      .map((s) => parseInt(s.trim(), 10))
-      .filter(Boolean);
-    if (!ids.length) return;
+    if (!selectedRecipes.length) return;
+    const ids = selectedRecipes.map(recipe => recipe.id);
     const updated = {
       ...schedule,
       [dialogDate]: [...(schedule[dialogDate] || []), ...ids],
@@ -78,7 +81,13 @@ export const MealCalendar: React.FC = () => {
     await updateMealCalendar({ schedule: updated });
     refetch();
     setAddOpen(false);
-    setDialogInput('');
+    setSelectedRecipes([]);
+  };
+
+  // Fonction pour obtenir le nom d'une recette par son ID
+  const getRecipeName = (id: number): string => {
+    const recipe = allRecipes.find(r => r.id === id);
+    return recipe ? recipe.name : `Recette #${id}`;
   };
 
   const monthMatrix = getMonthMatrix(currentMonth);
@@ -104,22 +113,20 @@ export const MealCalendar: React.FC = () => {
           <button
             onClick={(e) => {
               playSoundIfEnabled(playClick);
-              bounceElement(e.currentTarget);
-              createParticleEffect(e.currentTarget);
+              scaleUpElement(e.currentTarget, 1.05, 150);
               openViewDialog(todayKey);
             }}
-            className="px-4 py-2 rounded-hand border-2 border-white shadow-hand-drawn font-cartoon bg-white"
+            className="px-4 py-2 rounded-hand border-2 border-white shadow-hand-drawn font-cartoon bg-white hover:scale-105 transition-transform duration-150"
           >
             Planning
           </button>
           <button
             onClick={(e) => {
               playSoundIfEnabled(playClick);
-              bounceElement(e.currentTarget);
-              createParticleEffect(e.currentTarget);
+              scaleUpElement(e.currentTarget, 1.05, 150);
               openAddDialog();
             }}
-            className="px-4 py-2 rounded-hand border-2 border-white shadow-hand-drawn font-cartoon bg-cartoon-green text-white"
+            className="px-4 py-2 rounded-hand border-2 border-white shadow-hand-drawn font-cartoon bg-cartoon-green text-white hover:scale-105 transition-transform duration-150"
           >
             Ajouter
           </button>
@@ -191,13 +198,13 @@ export const MealCalendar: React.FC = () => {
               type="date"
               value={dialogDate}
               onChange={(e) => setDialogDate(e.target.value)}
-              className="w-full mb-2 px-3 py-2 rounded-hand border-2 border-cartoon-purple font-cartoon text-hand"
-            />
-            <input
-              value={dialogInput}
-              onChange={(e) => setDialogInput(e.target.value)}
-              placeholder="IDs séparés par des virgules"
               className="w-full mb-4 px-3 py-2 rounded-hand border-2 border-cartoon-purple font-cartoon text-hand"
+            />
+            <RecipeAutocomplete
+              onSelect={setSelectedRecipes}
+              selectedRecipes={selectedRecipes}
+              placeholder="Rechercher et sélectionner des recettes..."
+              multiple={true}
             />
             <div className="flex justify-end space-x-2">
               <button
@@ -222,13 +229,23 @@ export const MealCalendar: React.FC = () => {
           <div className="bg-white p-6 rounded-hand border-2 border-cartoon-purple shadow-hand-drawn w-full max-w-md">
             <h4 className="font-cartoon text-hand text-lg mb-4">{formatDate(dialogDate)}</h4>
             {schedule[dialogDate] && schedule[dialogDate].length > 0 ? (
-              <ul className="list-disc list-inside font-cartoon text-hand mb-4">
+              <ul className="space-y-2 font-cartoon text-hand mb-4">
                 {schedule[dialogDate].map((id) => (
-                  <li key={id}>Recette #{id}</li>
+                  <li key={id}>
+                    <button
+                      onClick={() => {
+                        playSoundIfEnabled(playClick);
+                        navigate(`/recipe/${id}`);
+                      }}
+                      className="text-left w-full p-2 rounded-hand border-2 border-cartoon-purple bg-paper-white hover:bg-cartoon-purple hover:text-white transition-all duration-200 hover:scale-105"
+                    >
+                      📖 {getRecipeName(id)}
+                    </button>
+                  </li>
                 ))}
               </ul>
             ) : (
-              <p className="font-cartoon text-hand mb-4">Aucune recette.</p>
+              <p className="font-cartoon text-hand mb-4">Aucune recette planifiée.</p>
             )}
             <div className="flex justify-end">
               <button
