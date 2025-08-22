@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router';
 import type { Recipe } from '../features/recipes/types';
 import { useToggleFavoriteMutation, useDeleteRecipeMutation } from '../features/recipes/hooks';
 import { playClick, playSuccess, playError, playSoundIfEnabled } from '../utils/sound';
@@ -16,6 +17,7 @@ export default function RecipeCard({ recipe, onEdit }: Props) {
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const toggleFavoriteMutation = useToggleFavoriteMutation();
   const deleteRecipeMutation = useDeleteRecipeMutation();
+  const navigate = useNavigate();
 
   /**
    * Gère le toggle du statut favori
@@ -65,6 +67,14 @@ export default function RecipeCard({ recipe, onEdit }: Props) {
   const handleEdit = () => {
     playSoundIfEnabled(playClick);
     onEdit?.(recipe);
+  };
+
+  /**
+   * Navigue vers la page de détails de la recette
+   */
+  const handleView = () => {
+    playSoundIfEnabled(playClick);
+    navigate(`/recipe/${recipe.id}`);
   };
 
   return (
@@ -162,6 +172,15 @@ export default function RecipeCard({ recipe, onEdit }: Props) {
         </div>
         
         <div className="flex gap-3">
+          <button
+            onClick={handleView}
+            className="btn-cartoon text-gray-800 text-sm font-cartoon hover:animate-wiggle"
+            title="Voir la recette"
+          >
+            <span className="text-lg mr-1">👀</span>
+            Voir
+          </button>
+
           {onEdit && (
             <button
               onClick={handleEdit}
@@ -172,7 +191,7 @@ export default function RecipeCard({ recipe, onEdit }: Props) {
               Éditer
             </button>
           )}
-          
+
           <button
             onClick={() => {
               playSoundIfEnabled(playClick);
