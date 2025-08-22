@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { RecipeForm } from '../components/RecipeForm';
 import { useCreateRecipeMutation } from '../features/recipes/hooks';
 import type { Recipe } from '../features/recipes/types';

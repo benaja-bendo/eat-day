@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router';
 import { RecipeForm } from '../components/RecipeForm';
 import { useRecipeQuery, useUpdateRecipeMutation } from '../features/recipes/hooks';
 import type { Recipe } from '../features/recipes/types';

@@ -1,4 +1,4 @@
-import { Routes, Route, useLocation } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router';
 import { useTransition, animated } from '@react-spring/web';
 import Home from './pages/Home';
 import AddRecipe from './pages/AddRecipe';
@@ -13,13 +13,16 @@ export default function App() {
     leave: { opacity: 0, transform: 'translate3d(-50%,0,0)' },
   });
 
-  return transitions((style, item) => (
-    <animated.div style={style} className="min-h-screen">
-      <Routes location={item}>
-        <Route path="/" element={<Home />} />
-        <Route path="/add" element={<AddRecipe />} />
-        <Route path="/edit/:id" element={<EditRecipe />} />
-      </Routes>
-    </animated.div>
-  ));
+  return transitions((style, item) => {
+    const AnimatedDiv = animated.div as any;
+    return (
+      <AnimatedDiv style={style} className="min-h-screen">
+        <Routes location={item}>
+          <Route path="/" element={<Home />} />
+          <Route path="/add" element={<AddRecipe />} />
+          <Route path="/edit/:id" element={<EditRecipe />} />
+        </Routes>
+      </AnimatedDiv>
+    );
+  });
 }
