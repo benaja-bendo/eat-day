@@ -20,6 +20,12 @@ app.use(cors());
 app.use(express.json());
 app.use('/uploads', express.static(uploadsDir));
 
+// Servir les fichiers statiques du frontend en production
+if (process.env.NODE_ENV === 'production') {
+  const distPath = path.join(__dirname, '..', 'dist');
+  app.use(express.static(distPath));
+}
+
 // Configuration multer pour préserver les extensions de fichiers
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -188,7 +194,18 @@ app.post('/upload', upload.single('file'), (req, res) => {
   res.status(201).json({ url: `/uploads/${req.file.filename}` });
 });
 
+// Servir l'application React pour toutes les routes non-API en production
+if (process.env.NODE_ENV === 'production') {
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'dist', 'index.html'));
+  });
+}
+
 app.listen(PORT, () => {
-  console.log(`API server listening on port ${PORT}`);
+  console.log(`🚀 Eat Day server listening on port ${PORT}`);
+  if (process.env.NODE_ENV === 'production') {
+    console.log(`📱 Frontend available at http://localhost:${PORT}`);
+  }
+  console.log(`🔌 API available at http://localhost:${PORT}/recipes`);
 });
 
