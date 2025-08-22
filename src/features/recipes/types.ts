@@ -16,6 +16,6 @@ export interface Recipe {
 }
 
 export interface MealCalendar {
-  todayRecipeId: number;
-  plannedIds: number[];
+  todayRecipeId: number | null;
+  schedule: Record<string, number[]>;
 }

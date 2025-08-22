@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { playClick, playSoundIfEnabled } from '../utils/sound';
 import { bounceElement, createParticleEffect } from '../utils/animations';
+import { useMealCalendarQuery } from '../features/recipes/hooks';
+import { updateMealCalendar } from '../features/recipes/api';
 
 interface Schedule {
   [date: string]: number[];
@@ -34,39 +36,57 @@ function getMonthMatrix(current: Date): Date[][] {
 }
 
 export const MealCalendar: React.FC = () => {
-  const [mode, setMode] = useState<'month' | 'planning'>('month');
-  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const { data, refetch } = useMealCalendarQuery();
   const [schedule, setSchedule] = useState<Schedule>({});
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const [input, setInput] = useState('');
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [addOpen, setAddOpen] = useState(false);
+  const [viewOpen, setViewOpen] = useState(false);
+  const [dialogDate, setDialogDate] = useState(new Date().toISOString().split('T')[0]);
+  const [dialogInput, setDialogInput] = useState('');
+  const [menu, setMenu] = useState<{ x: number; y: number; date: string } | null>(null);
+
+  useEffect(() => {
+    if (data?.schedule) {
+      setSchedule(data.schedule);
+    }
+  }, [data]);
 
   const todayKey = new Date().toISOString().split('T')[0];
 
-  const addRecipes = (dateKey: string) => {
-    const ids = input
+  const openAddDialog = (date?: string) => {
+    setDialogDate(date || todayKey);
+    setDialogInput('');
+    setAddOpen(true);
+  };
+
+  const openViewDialog = (date: string) => {
+    setDialogDate(date);
+    setViewOpen(true);
+  };
+
+  const handleAdd = async () => {
+    const ids = dialogInput
       .split(',')
       .map((s) => parseInt(s.trim(), 10))
       .filter(Boolean);
     if (!ids.length) return;
-    setSchedule((prev) => ({
-      ...prev,
-      [dateKey]: [...(prev[dateKey] || []), ...ids],
-    }));
-    setInput('');
-    setSelectedDate(null);
-  };
-
-  const handleModeChange = (
-    event: React.MouseEvent<HTMLButtonElement>,
-    next: 'month' | 'planning',
-  ) => {
-    playSoundIfEnabled(playClick);
-    bounceElement(event.currentTarget);
-    createParticleEffect(event.currentTarget);
-    setMode(next);
+    const updated = {
+      ...schedule,
+      [dialogDate]: [...(schedule[dialogDate] || []), ...ids],
+    };
+    setSchedule(updated);
+    await updateMealCalendar({ schedule: updated });
+    refetch();
+    setAddOpen(false);
+    setDialogInput('');
   };
 
   const monthMatrix = getMonthMatrix(currentMonth);
+
+  const handleContextMenu = (e: React.MouseEvent, date: string) => {
+    e.preventDefault();
+    setMenu({ x: e.clientX, y: e.clientY, date });
+  };
 
   return (
     <div className="card-cartoon max-w-4xl mx-auto p-6 paper-texture">
@@ -76,170 +96,178 @@ export const MealCalendar: React.FC = () => {
         </h2>
         <div className="flex space-x-2">
           <button
-            onClick={(e) => handleModeChange(e, 'month')}
-            className={`px-4 py-2 rounded-hand border-2 border-white shadow-hand-drawn font-cartoon ${
-              mode === 'month' ? 'bg-cartoon-purple text-white' : 'bg-white'
-            }`}
+            className="px-4 py-2 rounded-hand border-2 border-white shadow-hand-drawn font-cartoon bg-cartoon-purple text-white"
+            disabled
           >
-            Mode mois
+            Mois
           </button>
           <button
-            onClick={(e) => handleModeChange(e, 'planning')}
-            className={`px-4 py-2 rounded-hand border-2 border-white shadow-hand-drawn font-cartoon ${
-              mode === 'planning' ? 'bg-cartoon-purple text-white' : 'bg-white'
-            }`}
+            onClick={(e) => {
+              playSoundIfEnabled(playClick);
+              bounceElement(e.currentTarget);
+              createParticleEffect(e.currentTarget);
+              openViewDialog(todayKey);
+            }}
+            className="px-4 py-2 rounded-hand border-2 border-white shadow-hand-drawn font-cartoon bg-white"
           >
-            Mode planning
+            Planning
+          </button>
+          <button
+            onClick={(e) => {
+              playSoundIfEnabled(playClick);
+              bounceElement(e.currentTarget);
+              createParticleEffect(e.currentTarget);
+              openAddDialog();
+            }}
+            className="px-4 py-2 rounded-hand border-2 border-white shadow-hand-drawn font-cartoon bg-cartoon-green text-white"
+          >
+            Ajouter
           </button>
         </div>
       </div>
 
-      {/* Today's recipes */}
-      <div className="mb-8">
-        <h3 className="text-xl font-cartoon mb-2 text-hand">Plat du jour</h3>
-        <div className="bg-cartoon-yellow bg-opacity-20 p-4 rounded-hand border-2 border-cartoon-yellow border-dashed">
-          {schedule[todayKey] && schedule[todayKey].length > 0 ? (
-            <ul className="list-disc list-inside font-cartoon text-hand">
-              {schedule[todayKey].map((id) => (
-                <li key={id}>Recette #{id}</li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-gray-600 font-cartoon text-hand">Aucune recette pour aujourd'hui.</p>
-          )}
-          <div className="mt-4 flex">
-            <input
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="IDs séparés par des virgules"
-              className="flex-grow px-3 py-2 rounded-hand border-2 border-cartoon-yellow font-cartoon text-hand mr-2"
-            />
-            <button
-              onClick={() => addRecipes(todayKey)}
-              className="bg-cartoon-green text-white px-4 py-2 rounded-hand border-2 border-white shadow-hand-drawn font-cartoon"
-            >
-              Ajouter
-            </button>
-          </div>
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <button
+            onClick={() =>
+              setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1))
+            }
+            className="px-3 py-1 rounded-hand border-2 border-white shadow-hand-drawn font-cartoon bg-white"
+          >
+            ◀
+          </button>
+          <span className="font-cartoon text-hand text-xl">
+            {currentMonth.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
+          </span>
+          <button
+            onClick={() =>
+              setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1))
+            }
+            className="px-3 py-1 rounded-hand border-2 border-white shadow-hand-drawn font-cartoon bg-white"
+          >
+            ▶
+          </button>
+        </div>
+        <div className="grid grid-cols-7 gap-2 text-center font-cartoon text-hand mb-2">
+          {['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'].map((d) => (
+            <div key={d} className="font-bold">
+              {d}
+            </div>
+          ))}
+        </div>
+        <div className="grid grid-cols-7 gap-2">
+          {monthMatrix.flat().map((day) => {
+            const key = day.toISOString().split('T')[0];
+            const isCurrent = day.getMonth() === currentMonth.getMonth();
+            const recipes = schedule[key]?.length || 0;
+            return (
+              <button
+                key={key}
+                onClick={() => openViewDialog(key)}
+                onContextMenu={(e) => handleContextMenu(e, key)}
+                className={`h-20 rounded-hand border-2 flex flex-col items-center justify-center font-cartoon text-hand ${
+                  isCurrent
+                    ? 'bg-white border-cartoon-blue shadow-hand-drawn'
+                    : 'bg-gray-100 border-gray-200 text-gray-400'
+                }`}
+              >
+                <span>{day.getDate()}</span>
+                {recipes > 0 && (
+                  <span className="text-xs mt-1">
+                    {recipes} recette{recipes > 1 ? 's' : ''}
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      {mode === 'month' && (
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <button
-              onClick={() =>
-                setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1))
-              }
-              className="px-3 py-1 rounded-hand border-2 border-white shadow-hand-drawn font-cartoon bg-white"
-            >
-              ◀
-            </button>
-            <span className="font-cartoon text-hand text-xl">
-              {currentMonth.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
-            </span>
-            <button
-              onClick={() =>
-                setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1))
-              }
-              className="px-3 py-1 rounded-hand border-2 border-white shadow-hand-drawn font-cartoon bg-white"
-            >
-              ▶
-            </button>
-          </div>
-          <div className="grid grid-cols-7 gap-2 text-center font-cartoon text-hand mb-2">
-            {['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'].map((d) => (
-              <div key={d} className="font-bold">
-                {d}
-              </div>
-            ))}
-          </div>
-          <div className="grid grid-cols-7 gap-2">
-            {monthMatrix.flat().map((day) => {
-              const key = day.toISOString().split('T')[0];
-              const isCurrent = day.getMonth() === currentMonth.getMonth();
-              const recipes = schedule[key]?.length || 0;
-              return (
-                <button
-                  key={key}
-                  onClick={() => {
-                    setSelectedDate(key);
-                    setInput('');
-                  }}
-                  className={`h-20 rounded-hand border-2 flex flex-col items-center justify-center font-cartoon text-hand ${
-                    isCurrent
-                      ? 'bg-white border-cartoon-blue shadow-hand-drawn'
-                      : 'bg-gray-100 border-gray-200 text-gray-400'
-                  }`}
-                >
-                  <span>{day.getDate()}</span>
-                  {recipes > 0 && (
-                    <span className="text-xs mt-1">
-                      {recipes} recette{recipes > 1 ? 's' : ''}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-
-          {selectedDate && (
-            <div className="mt-6 p-4 bg-white rounded-hand border-2 border-cartoon-purple shadow-hand-drawn">
-              <h4 className="font-cartoon text-hand text-lg mb-2">{formatDate(selectedDate)}</h4>
-              {schedule[selectedDate] && schedule[selectedDate].length > 0 ? (
-                <ul className="list-disc list-inside font-cartoon text-hand mb-4">
-                  {schedule[selectedDate].map((id) => (
-                    <li key={id}>Recette #{id}</li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="font-cartoon text-hand mb-4">Aucune recette.</p>
-              )}
-              <div className="flex">
-                <input
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  placeholder="IDs séparés par des virgules"
-                  className="flex-grow px-3 py-2 rounded-hand border-2 border-cartoon-purple font-cartoon text-hand mr-2"
-                />
-                <button
-                  onClick={() => addRecipes(selectedDate)}
-                  className="bg-cartoon-green text-white px-4 py-2 rounded-hand border-2 border-white shadow-hand-drawn font-cartoon mr-2"
-                >
-                  Ajouter
-                </button>
-                <button
-                  onClick={() => setSelectedDate(null)}
-                  className="bg-cartoon-red text-white px-4 py-2 rounded-hand border-2 border-white shadow-hand-drawn font-cartoon"
-                >
-                  Fermer
-                </button>
-              </div>
+      {addOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-hand border-2 border-cartoon-purple shadow-hand-drawn w-full max-w-md">
+            <h4 className="font-cartoon text-hand text-lg mb-4">Ajouter des recettes</h4>
+            <input
+              type="date"
+              value={dialogDate}
+              onChange={(e) => setDialogDate(e.target.value)}
+              className="w-full mb-2 px-3 py-2 rounded-hand border-2 border-cartoon-purple font-cartoon text-hand"
+            />
+            <input
+              value={dialogInput}
+              onChange={(e) => setDialogInput(e.target.value)}
+              placeholder="IDs séparés par des virgules"
+              className="w-full mb-4 px-3 py-2 rounded-hand border-2 border-cartoon-purple font-cartoon text-hand"
+            />
+            <div className="flex justify-end space-x-2">
+              <button
+                onClick={handleAdd}
+                className="bg-cartoon-green text-white px-4 py-2 rounded-hand border-2 border-white shadow-hand-drawn font-cartoon"
+              >
+                Enregistrer
+              </button>
+              <button
+                onClick={() => setAddOpen(false)}
+                className="bg-cartoon-red text-white px-4 py-2 rounded-hand border-2 border-white shadow-hand-drawn font-cartoon"
+              >
+                Annuler
+              </button>
             </div>
-          )}
+          </div>
         </div>
       )}
 
-      {mode === 'planning' && (
-        <div>
-          {Object.keys(schedule).length === 0 && (
-            <p className="text-center font-cartoon text-hand text-gray-600">Aucun plat planifié.</p>
-          )}
-          {Object.entries(schedule)
-            .sort(([a], [b]) => a.localeCompare(b))
-            .map(([date, ids]) => (
-              <div
-                key={date}
-                className="mb-4 p-4 bg-white rounded-hand border-2 border-cartoon-blue shadow-hand-drawn"
+      {viewOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-hand border-2 border-cartoon-purple shadow-hand-drawn w-full max-w-md">
+            <h4 className="font-cartoon text-hand text-lg mb-4">{formatDate(dialogDate)}</h4>
+            {schedule[dialogDate] && schedule[dialogDate].length > 0 ? (
+              <ul className="list-disc list-inside font-cartoon text-hand mb-4">
+                {schedule[dialogDate].map((id) => (
+                  <li key={id}>Recette #{id}</li>
+                ))}
+              </ul>
+            ) : (
+              <p className="font-cartoon text-hand mb-4">Aucune recette.</p>
+            )}
+            <div className="flex justify-end">
+              <button
+                onClick={() => setViewOpen(false)}
+                className="bg-cartoon-red text-white px-4 py-2 rounded-hand border-2 border-white shadow-hand-drawn font-cartoon"
               >
-                <h4 className="font-cartoon text-hand text-lg mb-2">{formatDate(date)}</h4>
-                <ul className="list-disc list-inside font-cartoon text-hand">
-                  {ids.map((id) => (
-                    <li key={id}>Recette #{id}</li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+                Fermer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {menu && (
+        <div className="fixed inset-0 z-50" onClick={() => setMenu(null)}>
+          <div
+            className="absolute bg-white border-2 border-cartoon-purple rounded-hand shadow-hand-drawn"
+            style={{ top: menu.y, left: menu.x }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => {
+                openAddDialog(menu.date);
+                setMenu(null);
+              }}
+              className="block w-full text-left px-4 py-2 hover:bg-cartoon-purple hover:text-white font-cartoon text-hand"
+            >
+              Ajouter
+            </button>
+            <button
+              onClick={() => {
+                openViewDialog(menu.date);
+                setMenu(null);
+              }}
+              className="block w-full text-left px-4 py-2 hover:bg-cartoon-purple hover:text-white font-cartoon text-hand"
+            >
+              Voir
+            </button>
+          </div>
         </div>
       )}
     </div>

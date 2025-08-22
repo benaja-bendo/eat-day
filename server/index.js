@@ -53,7 +53,7 @@ CREATE TABLE IF NOT EXISTS recipes (
 CREATE TABLE IF NOT EXISTS calendar (
   id INTEGER PRIMARY KEY,
   todayRecipeId INTEGER,
-  plannedIds TEXT
+  schedule TEXT
 );
 `);
 
@@ -79,8 +79,8 @@ if (recipeCount === 0) {
     }
   });
   insertMany(seed.recipes);
-  db.prepare(`INSERT OR REPLACE INTO calendar (id, todayRecipeId, plannedIds) VALUES (1, @todayRecipeId, @plannedIds)`)
-    .run({ todayRecipeId: seed.calendar.todayRecipeId, plannedIds: JSON.stringify(seed.calendar.plannedIds || []) });
+  db.prepare(`INSERT OR REPLACE INTO calendar (id, todayRecipeId, schedule) VALUES (1, @todayRecipeId, @schedule)`)
+    .run({ todayRecipeId: seed.calendar.todayRecipeId, schedule: JSON.stringify(seed.calendar.schedule || {}) });
 }
 
 function rowToRecipe(row) {
@@ -162,22 +162,24 @@ app.delete('/recipes/:id', (req, res) => {
 // Calendar routes
 app.get('/calendar', (req, res) => {
   const row = db.prepare('SELECT * FROM calendar WHERE id = 1').get();
-  if (!row) return res.json({ todayRecipeId: null, plannedIds: [] });
-  res.json({ todayRecipeId: row.todayRecipeId, plannedIds: JSON.parse(row.plannedIds || '[]') });
+  if (!row) return res.json({ todayRecipeId: null, schedule: {} });
+  res.json({ todayRecipeId: row.todayRecipeId, schedule: JSON.parse(row.schedule || '{}') });
 });
 
 app.patch('/calendar', (req, res) => {
-  const { todayRecipeId, plannedIds } = req.body;
-  const exists = db.prepare('SELECT COUNT(*) as c FROM calendar WHERE id = 1').get().c;
-  if (exists) {
-    db.prepare('UPDATE calendar SET todayRecipeId = ?, plannedIds = ? WHERE id = 1')
-      .run(todayRecipeId, JSON.stringify(plannedIds || []));
+  const { todayRecipeId, schedule } = req.body;
+  const existing = db.prepare('SELECT * FROM calendar WHERE id = 1').get();
+  const newToday = todayRecipeId ?? existing?.todayRecipeId ?? null;
+  const newSchedule = schedule ? JSON.stringify(schedule) : existing?.schedule || '{}';
+  if (existing) {
+    db.prepare('UPDATE calendar SET todayRecipeId = ?, schedule = ? WHERE id = 1')
+      .run(newToday, newSchedule);
   } else {
-    db.prepare('INSERT INTO calendar (id, todayRecipeId, plannedIds) VALUES (1, ?, ?)')
-      .run(todayRecipeId, JSON.stringify(plannedIds || []));
+    db.prepare('INSERT INTO calendar (id, todayRecipeId, schedule) VALUES (1, ?, ?)')
+      .run(newToday, newSchedule);
   }
   const row = db.prepare('SELECT * FROM calendar WHERE id = 1').get();
-  res.json({ todayRecipeId: row.todayRecipeId, plannedIds: JSON.parse(row.plannedIds || '[]') });
+  res.json({ todayRecipeId: row.todayRecipeId, schedule: JSON.parse(row.schedule || '{}') });
 });
 
 // Image upload only
