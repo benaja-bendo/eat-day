@@ -98,7 +98,6 @@ export function useRandomRecipeQuery() {
   return useQuery({
     queryKey: ['randomRecipe'],
     queryFn: fetchRandomRecipe,
-    enabled: false, // Ne pas exécuter automatiquement
   });
 }
 

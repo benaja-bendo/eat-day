@@ -1,8 +1,9 @@
 import React from 'react';
+import { useNavigate } from 'react-router';
 import { useRandomRecipeQuery } from '../features/recipes/hooks';
 import RecipeCard from './RecipeCard';
-import { playSuccess, playWhoosh, playSoundIfEnabled } from '../utils/sound';
-import { createParticleEffect, scaleUpElement, glowElement } from '../utils/animations';
+import { playWhoosh, playSoundIfEnabled } from '../utils/sound';
+import { createParticleEffect, scaleUpElement } from '../utils/animations';
 import type { Recipe } from '../features/recipes/types';
 
 interface RandomRecipeProps {
@@ -14,6 +15,7 @@ interface RandomRecipeProps {
  * Utilise le hook useRandomRecipeQuery pour récupérer une recette au hasard
  */
 export const RandomRecipe: React.FC<RandomRecipeProps> = ({ onEdit }) => {
+  const navigate = useNavigate();
   const { data: randomRecipe, isLoading, error, refetch } = useRandomRecipeQuery();
 
   /**
@@ -28,24 +30,16 @@ export const RandomRecipe: React.FC<RandomRecipeProps> = ({ onEdit }) => {
   };
 
   /**
-   * Gère la sélection de la recette aléatoire comme recette du jour
+   * Navigue vers la recherche par ingrédients
    */
-  const handleSelectAsDailyRecipe = (event: React.MouseEvent<HTMLButtonElement>) => {
-    if (randomRecipe) {
-      playSoundIfEnabled(playSuccess);
-      const button = event.currentTarget;
-      glowElement(button, '#10b981', 1500);
-      scaleUpElement(button, 1.1);
-      // TODO: Implémenter la logique pour ajouter au calendrier des repas
-      console.log('Recette sélectionnée comme recette du jour:', randomRecipe.name);
-    }
+  const handleIngredientSearch = () => {
+    navigate('/ingredients');
   };
 
   return (
     <div className="card-cartoon p-8 paper-texture">
-      {/* En-tête */}
-      <div className="flex items-center justify-between mb-8">
-        <div>
+        {/* En-tête */}
+        <div className="mb-8">
           <h2 className="text-3xl font-cartoon font-bold text-gray-800 flex items-center text-hand">
             <span className="text-4xl mr-3 animate-bounce-gentle">🎲</span>
             Recette Surprise Magique
@@ -54,24 +48,6 @@ export const RandomRecipe: React.FC<RandomRecipeProps> = ({ onEdit }) => {
             Découvrez une recette au hasard pour vous inspirer !
           </p>
         </div>
-        <button
-          onClick={handleNewRandomRecipe}
-          disabled={isLoading}
-          className="bg-cartoon-purple text-white px-6 py-3 rounded-hand hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-105 hover:animate-wiggle shadow-hand-drawn border-2 border-white font-cartoon flex items-center"
-        >
-          {isLoading ? (
-            <>
-              <span className="animate-spin mr-2">🎲</span>
-              Chargement...
-            </>
-          ) : (
-            <>
-              <span className="mr-2 text-xl">🔄</span>
-              Nouvelle recette
-            </>
-          )}
-        </button>
-      </div>
 
       {/* Contenu */}
       {isLoading && !randomRecipe && (
@@ -103,24 +79,24 @@ export const RandomRecipe: React.FC<RandomRecipeProps> = ({ onEdit }) => {
             />
           </div>
           
-          {/* Actions */}
-          <div className="flex gap-4 pt-6 border-t-2 border-cartoon-yellow border-dashed">
-            <button
-              onClick={handleSelectAsDailyRecipe}
-              className="flex-1 bg-cartoon-green text-white px-6 py-3 rounded-hand hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all duration-300 hover:scale-105 hover:animate-bounce-gentle shadow-hand-drawn border-2 border-white font-cartoon flex items-center justify-center"
-            >
-              <span className="mr-2 text-xl">⭐</span>
-              Choisir comme recette du jour
-            </button>
-            <button
-              onClick={handleNewRandomRecipe}
-              disabled={isLoading}
-              className="bg-cartoon-gray text-white px-6 py-3 rounded-hand hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-105 hover:animate-wiggle shadow-hand-drawn border-2 border-white font-cartoon flex items-center"
-            >
-              <span className="mr-2 text-xl">🎲</span>
-              Autre recette
-            </button>
-          </div>
+            {/* Actions */}
+            <div className="flex gap-4 pt-6 border-t-2 border-cartoon-yellow border-dashed">
+              <button
+                onClick={handleNewRandomRecipe}
+                disabled={isLoading}
+                className="flex-1 bg-cartoon-gray text-white px-6 py-3 rounded-hand hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-105 hover:animate-wiggle shadow-hand-drawn border-2 border-white font-cartoon flex items-center justify-center"
+              >
+                <span className="mr-2 text-xl">🎲</span>
+                Relance
+              </button>
+              <button
+                onClick={handleIngredientSearch}
+                className="flex-1 bg-cartoon-purple text-white px-6 py-3 rounded-hand hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-all duration-300 hover:scale-105 hover:animate-wiggle shadow-hand-drawn border-2 border-white font-cartoon flex items-center justify-center"
+              >
+                <span className="mr-2 text-xl">📝</span>
+                Liste d'ingrédients
+              </button>
+            </div>
         </div>
       )}
 
@@ -134,7 +110,7 @@ export const RandomRecipe: React.FC<RandomRecipeProps> = ({ onEdit }) => {
             onClick={handleNewRandomRecipe}
             className="bg-cartoon-purple text-white px-8 py-3 rounded-hand hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-all duration-300 hover:scale-105 hover:animate-wiggle shadow-hand-drawn border-2 border-white font-cartoon"
           >
-            Réessayer
+              Relancer
           </button>
         </div>
       )}

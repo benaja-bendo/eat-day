@@ -1,19 +1,13 @@
 import React from 'react';
-import RecipeCard from './RecipeCard';
 import { usePlaylistQuery } from '../features/recipes/hooks';
 import { playClick, playSoundIfEnabled } from '../utils/sound';
-import { bounceElement, pulseElement, createParticleEffect } from '../utils/animations';
-import type { Recipe } from '../features/recipes/types';
-
-interface DailyPlaylistProps {
-  onEdit?: (recipe: Recipe) => void;
-}
+import { bounceElement, createParticleEffect } from '../utils/animations';
 
 /**
  * Composant pour afficher la playlist quotidienne avec la recette du jour
  * et les recettes planifiées
  */
-export const DailyPlaylist: React.FC<DailyPlaylistProps> = ({ onEdit }) => {
+export const DailyPlaylist: React.FC = () => {
   const { data: playlist, isLoading, error, refetch } = usePlaylistQuery();
 
   /**
