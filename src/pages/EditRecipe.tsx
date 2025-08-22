@@ -2,7 +2,6 @@ import React from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { RecipeForm } from '../components/RecipeForm';
 import { useRecipeQuery, useUpdateRecipeMutation } from '../features/recipes/hooks';
-import type { Recipe } from '../features/recipes/types';
 import { playSuccess, playError } from '../utils/sound';
 
 /**
@@ -18,13 +17,13 @@ export const EditRecipe: React.FC = () => {
   /**
    * Gère la soumission du formulaire de modification de recette
    */
-  const handleSubmit = async (recipeData: Omit<Recipe, 'id' | 'createdAt'>) => {
+  const handleSubmit = async (formData: FormData) => {
     if (!recipe) return;
-    
+
     try {
       await updateRecipeMutation.mutateAsync({
         id: recipe.id,
-        recipe: recipeData,
+        formData,
       });
       playSuccess();
       navigate('/');

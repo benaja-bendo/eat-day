@@ -110,7 +110,7 @@ app.post('/recipes', upload.single('image'), (req, res) => {
     JSON.stringify(data.ingredients ? JSON.parse(data.ingredients) : []),
     JSON.stringify(data.occasions ? JSON.parse(data.occasions) : []),
     JSON.stringify(data.preferences ? JSON.parse(data.preferences) : []),
-    data.favorite ? 1 : 0,
+    data.favorite === 'true' || data.favorite === true || data.favorite === '1' ? 1 : 0,
     new Date().toISOString()
   );
   const row = db.prepare('SELECT * FROM recipes WHERE id = ?').get(result.lastInsertRowid);
@@ -132,7 +132,9 @@ app.patch('/recipes/:id', upload.single('image'), (req, res) => {
     JSON.stringify(data.ingredients ? JSON.parse(data.ingredients) : JSON.parse(existing.ingredients)),
     JSON.stringify(data.occasions ? JSON.parse(data.occasions) : JSON.parse(existing.occasions)),
     JSON.stringify(data.preferences ? JSON.parse(data.preferences) : JSON.parse(existing.preferences)),
-    data.favorite !== undefined ? (data.favorite ? 1 : 0) : existing.favorite,
+    data.favorite !== undefined
+      ? (data.favorite === 'true' || data.favorite === true || data.favorite === '1' ? 1 : 0)
+      : existing.favorite,
     id
   );
   const row = db.prepare('SELECT * FROM recipes WHERE id = ?').get(id);

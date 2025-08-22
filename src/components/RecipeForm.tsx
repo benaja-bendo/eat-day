@@ -5,7 +5,11 @@ import { shakeElement, bounceElement, pulseElement, wiggleElement, createConfett
 
 interface RecipeFormProps {
   recipe?: Recipe;
-  onSubmit: (recipe: Omit<Recipe, 'id' | 'createdAt'>) => void;
+  /**
+   * Le callback reçoit les données du formulaire sous forme de FormData afin
+   * de permettre l'envoi de fichiers (image) au backend.
+   */
+  onSubmit: (formData: FormData) => void;
   onCancel: () => void;
   isLoading?: boolean;
 }
@@ -29,6 +33,8 @@ export const RecipeForm: React.FC<RecipeFormProps> = ({
   const [occasions, setOccasions] = useState<string[]>(recipe?.occasions || []);
   const [preferences, setPreferences] = useState<string[]>(recipe?.preferences || []);
   const [isFavorite, setIsFavorite] = useState(recipe?.favorite || false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | undefined>(recipe?.image);
   
   // Options prédéfinies
   const occasionOptions = [
@@ -94,11 +100,20 @@ export const RecipeForm: React.FC<RecipeFormProps> = ({
     playSoundIfEnabled(playClick);
     const button = event.currentTarget;
     pulseElement(button);
-    setPreferences(prev => 
+    setPreferences(prev =>
       prev.includes(preference)
         ? prev.filter(p => p !== preference)
         : [...prev, preference]
     );
+  };
+
+  /**
+   * Gère la sélection d'une image et prépare l'aperçu
+   */
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setImageFile(file);
+    setImagePreview(file ? URL.createObjectURL(file) : undefined);
   };
 
   /**
@@ -144,17 +159,19 @@ export const RecipeForm: React.FC<RecipeFormProps> = ({
     
     // Filtre les ingrédients vides
     const validIngredients = ingredients.filter(ing => ing.name.trim());
-    
-    const recipeData = {
-      name: name.trim(),
-      description: description.trim(),
-      ingredients: validIngredients,
-      occasions,
-      preferences,
-      favorite: isFavorite
-    };
-    
-    onSubmit(recipeData);
+
+    const formData = new FormData();
+    formData.append('name', name.trim());
+    formData.append('description', description.trim());
+    formData.append('ingredients', JSON.stringify(validIngredients));
+    formData.append('occasions', JSON.stringify(occasions));
+    formData.append('preferences', JSON.stringify(preferences));
+    formData.append('favorite', String(isFavorite));
+    if (imageFile) {
+      formData.append('image', imageFile);
+    }
+
+    onSubmit(formData);
   };
 
   /**
@@ -204,6 +221,27 @@ export const RecipeForm: React.FC<RecipeFormProps> = ({
             placeholder="Décrivez votre recette..."
             required
           />
+        </div>
+
+        {/* Image */}
+        <div>
+          <label htmlFor="image" className="block text-sm font-medium text-gray-700 mb-2">
+            Image
+          </label>
+          <input
+            type="file"
+            id="image"
+            accept="image/*"
+            onChange={handleImageChange}
+            className="w-full"
+          />
+          {imagePreview && (
+            <img
+              src={imagePreview}
+              alt="Aperçu de l'image"
+              className="mt-2 w-full h-48 object-cover rounded-md"
+            />
+          )}
         </div>
 
         {/* Ingrédients */}
